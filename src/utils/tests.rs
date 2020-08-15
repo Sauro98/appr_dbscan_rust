@@ -11,7 +11,7 @@ fn euclidean_distance_test() {
 fn get_corners_test(){
     let side_size = 2.0;
     let cell_center = [0.0,0.0];
-    let mut corners : Vec<Vec<f64>> = Vec::with_capacity(1);
+    let mut corners = Vec::with_capacity(1);
     get_corners(&cell_center, side_size, &mut corners);
     assert_eq!(corners[0][0], 1.0);
     assert_eq!(corners[0][1], 1.0);
@@ -23,7 +23,7 @@ fn get_corners_test(){
     assert_eq!(corners[3][0], -1.0);
 
     let cell_center = [0.0, 0.0, 0.0];
-    let mut corners : Vec<Vec<f64>> = Vec::with_capacity(1);
+    let mut corners = Vec::with_capacity(1);
     get_corners(&cell_center, side_size, &mut corners);
     assert_eq!(corners[0][0], 1.0);
     assert_eq!(corners[0][1], 1.0);
@@ -106,7 +106,7 @@ fn determine_intersection_test() {
 #[test]
 fn get_neighbours_test(){
     let cell_index = [0,0];
-    let mut neighbours : Vec<Vec<i64>> = Vec::with_capacity(21);
+    let mut neighbours = Vec::with_capacity(21);
     get_neighbours(&cell_index, &mut neighbours);
     assert_eq!(neighbours.len(), 21);
 }

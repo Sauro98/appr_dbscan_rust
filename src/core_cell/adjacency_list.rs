@@ -1,11 +1,13 @@
+use crate::utils::CellIndex;
+
 #[derive(Clone)]
-pub struct AdjacencyList {
-    pub vertex: Vec<i64>,
-    pub adjacent_vertices: Vec<Vec<i64>>
+pub struct AdjacencyList <const D: usize>{
+    pub vertex: CellIndex<D>,
+    pub adjacent_vertices: Vec<CellIndex<D>>
 }
 
-impl AdjacencyList {
-    pub fn new(vertex: &Vec<i64>) -> AdjacencyList {
+impl <const D: usize> AdjacencyList<D> {
+    pub fn new(vertex: &CellIndex<D>) -> AdjacencyList<D> {
         AdjacencyList {
             vertex: vertex.clone(),
             adjacent_vertices: Vec::new()

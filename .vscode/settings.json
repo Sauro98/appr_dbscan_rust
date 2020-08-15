@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.toml": "toml",
+        "chrono": "cpp",
+        "ostream": "cpp"
+    }
+}

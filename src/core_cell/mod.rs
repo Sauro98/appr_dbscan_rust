@@ -1,36 +1,36 @@
 use crate::cell::*;
-use crate::utils::{euclidean_distance, DBSCANParams};
+use crate::utils::*;
 use std::collections::HashMap;
 mod adjacency_list;
 use adjacency_list::AdjacencyList;
 use crate::tree_structure::TreeStructure;
 
 #[derive(Clone)]
-pub struct CoreCell {
-    pub core_points: Vec<Vec<f64>>,
-    pub neighbour_cell_indexes: Vec<Vec<i64>>,
-    pub root: TreeStructure,
+pub struct CoreCell <const D: usize>{
+    pub core_points: Vec<Point<D>>,
+    pub neighbour_cell_indexes: Vec<CellIndex<D>>,
+    pub root: TreeStructure<D>,
     pub visited: bool,
     pub i_cluster: usize,
-    pub adjacency_list: AdjacencyList
+    pub adjacency_list: AdjacencyList<D>
 }
 
-impl CoreCell {
-    pub fn new(neighbour_cell_indexes: &Vec<Vec<i64>>) -> CoreCell {
+impl <const D: usize> CoreCell<D> {
+    pub fn new(neighbour_cell_indexes: &Vec<CellIndex<D>>) -> CoreCell<D> {
         CoreCell {
             core_points: Vec::new(),
             neighbour_cell_indexes: neighbour_cell_indexes.clone(),
-            root: TreeStructure::new(0,&Vec::new(),0),
+            root: TreeStructure::new(0,&[0;D],0,0.0),
             visited: false,
             i_cluster: 0,
-            adjacency_list: AdjacencyList::new(&Vec::new())
+            adjacency_list: AdjacencyList::new(&[0;D])
         }
     }
 }
 
-pub type CoreCellTable = HashMap<Vec<i64>, CoreCell>;
+pub type CoreCellTable <const D: usize> = HashMap<CellIndex<D>, CoreCell<D>>;
 
-fn points_in_range(point: &Vec<f64>, cell: &Cell, epsilon: f64) -> usize{
+fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
     let mut cnt : usize = 0;
     for s_point in &cell.points {
         if euclidean_distance(point, &s_point.point) <= epsilon {
@@ -40,8 +40,8 @@ fn points_in_range(point: &Vec<f64>, cell: &Cell, epsilon: f64) -> usize{
     cnt
 }
 
-fn is_same_index(i1: &[i64], i2: &[i64]) -> bool {
-    for i in 0..i1.len() {
+fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
+    for i in 0..D {
         if i1[i] != i2[i] {
             return false;
         }
@@ -49,7 +49,7 @@ fn is_same_index(i1: &[i64], i2: &[i64]) -> bool {
     true
 }
 
-fn label_sparse_cell(cells_c: &CellTable,curr_cell: &mut Cell, s_core: &mut CoreCellTable, params: &DBSCANParams){
+fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams){
     let mut is_core_cell = false;
     let len = curr_cell.points.len();
     for mut s_point in &mut curr_cell.points {
@@ -78,7 +78,7 @@ fn label_sparse_cell(cells_c: &CellTable,curr_cell: &mut Cell, s_core: &mut Core
     }
 }
 
-fn label_dense_cell(cell: &mut Cell, s_core: &mut CoreCellTable, params: &DBSCANParams){
+fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams){
     let mut core_cell = CoreCell::new(&cell.neighbour_cell_indexes);
     for mut s_point in &mut cell.points {
         s_point.is_core = true;
@@ -88,8 +88,8 @@ fn label_dense_cell(cell: &mut Cell, s_core: &mut CoreCellTable, params: &DBSCAN
     s_core.insert(cell.index.clone(), core_cell);
 }
 
-pub fn label_points(cells: &mut CellTable, params: &DBSCANParams) -> CoreCellTable {
-    let mut s_core : CoreCellTable= HashMap::with_capacity(params.cardinality as usize);
+pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> CoreCellTable<D> {
+    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality as usize);
     let cells_cloned = cells.clone();
     for cell in cells.values_mut() {
         if cell.points.len() >= params.min_pts {
@@ -102,14 +102,14 @@ pub fn label_points(cells: &mut CellTable, params: &DBSCANParams) -> CoreCellTab
     s_core
 }
 
-fn compute_adjacency_lists(s_core:  &mut CoreCellTable, params: &DBSCANParams) {
+fn compute_adjacency_lists<const D: usize>(s_core:  &mut CoreCellTable<D>, params: &DBSCANParams) {
     let s_core_cloned = s_core.clone();
     for (key, core_cell) in s_core.iter_mut() {
         core_cell.adjacency_list = find_edges_of_cell(key, &s_core_cloned, params);
     }
 }
 
-fn find_edges_of_cell(index_c : &Vec<i64>, s_core: &CoreCellTable, params: &DBSCANParams) -> AdjacencyList {
+fn find_edges_of_cell<const D: usize>(index_c : &CellIndex<D>, s_core: &CoreCellTable<D>, params: &DBSCANParams) -> AdjacencyList<D> {
     let mut list = AdjacencyList::new(index_c);
     let curr_cell = s_core.get(index_c).unwrap();
     for n_index in &curr_cell.neighbour_cell_indexes {
