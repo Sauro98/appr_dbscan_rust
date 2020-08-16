@@ -49,6 +49,30 @@ fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
     true
 }
 
+pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> CoreCellTable<D> {
+    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality as usize);
+    let cells_cloned = cells.clone();
+    for cell in cells.values_mut() {
+        if cell.points.len() >= params.min_pts {
+            label_dense_cell(cell, &mut s_core, params);
+        } else {
+            label_sparse_cell(&cells_cloned, cell, &mut s_core, params)
+        }
+    }
+    s_core
+}
+
+fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams){
+    let mut core_cell = CoreCell::new(&cell.neighbour_cell_indexes);
+    for mut s_point in &mut cell.points {
+        s_point.is_core = true;
+        core_cell.core_points.push(s_point.point.clone())
+    }
+    core_cell.root = TreeStructure::build_structure(&core_cell.core_points, params);
+    s_core.insert(cell.index.clone(), core_cell);
+}
+
+
 fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams){
     let mut is_core_cell = false;
     let len = curr_cell.points.len();
@@ -60,7 +84,7 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
                     Some(n_cell) => {
                         tot_pts += points_in_range(&s_point.point, n_cell, params.epsilon) 
                     },
-                    None => {}
+                    _ => {}
                 }
             }
         }
@@ -78,31 +102,7 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
     }
 }
 
-fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams){
-    let mut core_cell = CoreCell::new(&cell.neighbour_cell_indexes);
-    for mut s_point in &mut cell.points {
-        s_point.is_core = true;
-        core_cell.core_points.push(s_point.point.clone())
-    }
-    core_cell.root = TreeStructure::build_structure(&core_cell.core_points, params);
-    s_core.insert(cell.index.clone(), core_cell);
-}
-
-pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> CoreCellTable<D> {
-    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality as usize);
-    let cells_cloned = cells.clone();
-    for cell in cells.values_mut() {
-        if cell.points.len() >= params.min_pts {
-            label_dense_cell(cell, &mut s_core, params);
-        } else {
-            label_sparse_cell(&cells_cloned, cell, &mut s_core, params)
-        }
-    }
-    compute_adjacency_lists(&mut s_core, params);
-    s_core
-}
-
-fn compute_adjacency_lists<const D: usize>(s_core:  &mut CoreCellTable<D>, params: &DBSCANParams) {
+pub fn compute_adjacency_lists<const D: usize>(s_core:  &mut CoreCellTable<D>, params: &DBSCANParams) {
     let s_core_cloned = s_core.clone();
     for (key, core_cell) in s_core.iter_mut() {
         core_cell.adjacency_list = find_edges_of_cell(key, &s_core_cloned, params);

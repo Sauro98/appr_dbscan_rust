@@ -11,6 +11,7 @@ opt-level = "s"
 debug = 2
 lto = true
 incremental = true
+debug-assertions = true
 
 [dependencies]
 

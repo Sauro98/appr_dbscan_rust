@@ -10,6 +10,8 @@ mod data_io;
 use std::env;
 use std::time::{Instant};
 use std::process;
+use std::fs::File;
+use std::io::{Write};
 
 use utils::{Point, DBSCANParams};
 use data_io::*;
@@ -52,8 +54,31 @@ fn do_dbscan(params: &DBSCANParams, file_name: &str){
 fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str) {
     let points: Vec<Point<D>> = read_points_from_file(file_name, &params);
     let now = Instant::now();
-    let _res = approximate_dbscan(&points, &params);
-    println!("In {} milliseconds", now.elapsed().as_millis());
+    let res = approximate_dbscan(&points, &params);
+    println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
+    let mut gp_file = match File::create("./plot.gp".to_string()) {
+        Err(why) => panic!("couldn't create {}:", why),
+        Ok(file) => file,
+    };
+    gp_file.write("set nokey \n plot".as_bytes()).unwrap();
+    for i in 0..res.len() {
+        let filename = "./gp_srcs/cl_".to_string() + &i.to_string()+ &".txt".to_string();
+        let mut cluster_file = match File::create(&filename) {
+            Err(why) => panic!("couldn't create {}:", why),
+            Ok(file) => file,
+        };
+    
+        for j in 0..res[i].len() {
+            for k in 0..D{
+                cluster_file.write(&res[i][j][k].to_string().as_bytes()).unwrap();
+                cluster_file.write(&" ".as_bytes()).unwrap();
+            }
+            cluster_file.write(&"\n".as_bytes()).unwrap();
+        }
+        
+        gp_file.write(("\"".to_string()+&filename+&"\" using 1:2 pt \".\" lw 1,\\".to_string()).as_bytes()).unwrap();
+        gp_file.write(&"\n".as_bytes()).unwrap();
+    }
 }
 
 fn print_help(){

@@ -39,6 +39,7 @@ pub type CellTable <const D: usize> = HashMap<CellIndex<D>, Cell<D>>;
 
 pub fn find_cells<const D: usize>(points: &Vec<Point<D>>, params: &DBSCANParams) -> CellTable<D> {
     let mut table : CellTable<D> = HashMap::with_capacity(params.cardinality as usize);
+    println!("cell_size {} ", params.epsilon/(params.dimensionality as f64).sqrt());
     for p_i in 0..params.cardinality as usize {
         let curr_point = &points[p_i];
         let index_arr = get_base_cell_index(curr_point, params);

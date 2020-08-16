@@ -11,44 +11,55 @@ fn euclidean_distance_test() {
 fn get_corners_test(){
     let side_size = 2.0;
     let cell_center = [0.0,0.0];
-    let mut corners = Vec::with_capacity(1);
-    get_corners(&cell_center, side_size, &mut corners);
-    assert_eq!(corners[0][0], 1.0);
-    assert_eq!(corners[0][1], 1.0);
+    let corners = get_corners(&cell_center, side_size);
+    //--0
+    assert_eq!(corners[0][0], -1.0);
+    assert_eq!(corners[0][1], -1.0);
+    //--1
     assert_eq!(corners[1][0], 1.0);
     assert_eq!(corners[1][1], -1.0);
+    //--2
     assert_eq!(corners[2][0], -1.0);
     assert_eq!(corners[2][1], 1.0);
-    assert_eq!(corners[3][0], -1.0);
-    assert_eq!(corners[3][0], -1.0);
+    //--3
+    assert_eq!(corners[3][0], 1.0);
+    assert_eq!(corners[3][0], 1.0);
 
     let cell_center = [0.0, 0.0, 0.0];
-    let mut corners = Vec::with_capacity(1);
-    get_corners(&cell_center, side_size, &mut corners);
-    assert_eq!(corners[0][0], 1.0);
-    assert_eq!(corners[0][1], 1.0);
-    assert_eq!(corners[0][2], 1.0);
+    let corners = get_corners(&cell_center, side_size);
+
+    //--0
+    assert_eq!(corners[0][0], -1.0);
+    assert_eq!(corners[0][1], -1.0);
+    assert_eq!(corners[0][2], -1.0);
+    //--1
     assert_eq!(corners[1][0], 1.0);
-    assert_eq!(corners[1][1], 1.0);
+    assert_eq!(corners[1][1], -1.0);
     assert_eq!(corners[1][2], -1.0);
-    assert_eq!(corners[2][0], 1.0);
-    assert_eq!(corners[2][1], -1.0);
-    assert_eq!(corners[2][2], 1.0);
+    //--2
+    assert_eq!(corners[2][0], -1.0);
+    assert_eq!(corners[2][1], 1.0);
+    assert_eq!(corners[2][2], -1.0);
+    //--3
     assert_eq!(corners[3][0], 1.0);
-    assert_eq!(corners[3][1], -1.0);
+    assert_eq!(corners[3][1], 1.0);
     assert_eq!(corners[3][2], -1.0);
+    //--4
     assert_eq!(corners[4][0], -1.0);
-    assert_eq!(corners[4][1], 1.0);
+    assert_eq!(corners[4][1], -1.0);
     assert_eq!(corners[4][2], 1.0);
-    assert_eq!(corners[5][0], -1.0);
-    assert_eq!(corners[5][1], 1.0);
-    assert_eq!(corners[5][2], -1.0);
+    //--5
+    assert_eq!(corners[5][0], 1.0);
+    assert_eq!(corners[5][1], -1.0);
+    assert_eq!(corners[5][2], 1.0);
+    //--6
     assert_eq!(corners[6][0], -1.0);
-    assert_eq!(corners[6][1], -1.0);
+    assert_eq!(corners[6][1], 1.0);
     assert_eq!(corners[6][2], 1.0);
-    assert_eq!(corners[7][0], -1.0);
-    assert_eq!(corners[7][1], -1.0);
-    assert_eq!(corners[7][2], -1.0);
+    //--7
+    assert_eq!(corners[7][0], 1.0);
+    assert_eq!(corners[7][1], 1.0);
+    assert_eq!(corners[7][2], 1.0);
 }
 
 #[test]

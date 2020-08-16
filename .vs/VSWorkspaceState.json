@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\src",
+    "\\src\\core_cell",
     "\\src\\utils"
   ],
-  "SelectedNode": "\\src\\utils\\mod.rs",
+  "SelectedNode": "\\src\\utils\\tests.rs",
   "PreviewInSolutionExplorer": false
 }

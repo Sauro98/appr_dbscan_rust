@@ -25,7 +25,7 @@ pub fn euclidean_distance<const D: usize>(p: &Point<D>, q: &Point<D>) -> f64 {
     sum.sqrt()
 }
 
-fn get_corners_of_cell<const D: usize>(cell_center: &CellCenter<D>, side_size: f64, j: usize, corners: &mut Vec<Point<D>>){
+/*fn get_corners_of_cell<const D: usize>(cell_center: &CellCenter<D>, side_size: f64, j: usize, corners: &mut Vec<Point<D>>){
     let mut new_corner = cell_center.clone();
     if j != D - 1 {
         new_corner[j] += side_size/2.0;
@@ -42,16 +42,38 @@ fn get_corners_of_cell<const D: usize>(cell_center: &CellCenter<D>, side_size: f
 
 pub fn get_corners<const D: usize>(cell_center: &CellCenter<D>, side_size: f64, corners: &mut Vec<Point<D>>){
     get_corners_of_cell(cell_center, side_size, 0, corners);
+}*/
+
+fn get_corners<const D: usize>(cell_center: &CellCenter<D>, side_size: f64) -> Vec<Point<D>>{
+    let dist = side_size/2.0;
+    //Ho 2^d combinazioni. Posso pensare ogni combinazione come un numero binario di d cifre.
+    //Immagino di sostituire lo 0 con -dist e l'1 con +dist. Allora posso partire da cell_center
+    //e fare la sua somma con ogni numero binario per trovare tutti i vertici
+    let top = 2_usize.pow(D as u32);
+    let mut corners = Vec::with_capacity(top);
+    for bin_rep in 0..top {
+        let mut new_corner = cell_center.clone();
+        for bit_i in 0..D {
+            let mask = 1 << bit_i;
+            if bin_rep & mask == 0 {
+                new_corner[bit_i] -= dist;
+            } else {
+                new_corner[bit_i] += dist;
+            }
+        }
+        //println!("{:?}",new_corner);
+        corners.push(new_corner);
+    }
+    corners
 }
 
 pub fn determine_intersection<const D: usize>(q: &Point<D>, params: &DBSCANParams, index_c: &CellIndex<D>, side_size:f64) -> IntersectionType{
     let n_corners = (2_usize.pow(D as u32)) as usize;
-    let mut corners : Vec<Point<D>> = Vec::with_capacity(n_corners);
     let mut cell_center : CellCenter<D> = [0.0;D];
     for i in 0..D {
         cell_center[i] = index_c[i] as f64 * side_size;
     }
-    get_corners(&cell_center, side_size, &mut corners);
+    let corners = get_corners(&cell_center, side_size);
     let appr_dist = (1.0 + params.rho) * params.epsilon;
     let mut appr_in_count : usize = 0;
     let mut out_count : usize = 0;
