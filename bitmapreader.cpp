@@ -1,4 +1,5 @@
 #include<iostream>
+#include<stdio.h>
 #include<fstream>
 #include<stddef.h>
 
@@ -46,33 +47,33 @@ void print_dib_header(dib_header_t& header){
     std::cout<<"important_colors: "<<header.important_colors<<std::endl;
 }
 
-uint32_t read_uint(std::ifstream& ifs){
+uint32_t read_uint(FILE* ifs){
     uint32_t val = 0;
     for(int i = 0; i < 4; i++){
-        val |= (((uint32_t)ifs.get())<< (8 * i));
+        val |= (((uint32_t)fgetc(ifs))<< (8 * i));
     } 
     return val;
 }
 
-uint16_t read_ushort(std::ifstream& ifs){
+uint16_t read_ushort(FILE* ifs){
     uint16_t val = 0;
     for(int i = 0; i < 2; i++){
-        val |= (((uint16_t)ifs.get())<< (8 * i));
+        val |= (((uint16_t)fgetc(ifs))<< (8 * i));
     } 
     return val;
 }
 
-bmp_header_t read_bmp_header(std::ifstream& ifs){
+bmp_header_t read_bmp_header(FILE* ifs){
     bmp_header_t header;
-    header.cntrl_1 = ifs.get();
-    header.cntrl_2 = ifs.get();
+    header.cntrl_1 = fgetc(ifs);
+    header.cntrl_2 = fgetc(ifs);
     header.file_size = read_uint(ifs);
     header.unused = read_uint(ifs);
     header.offset = read_uint(ifs);
     return header;
 }
 
-dib_header_t read_dib_header(std::ifstream& ifs){
+dib_header_t read_dib_header(FILE* ifs){
     dib_header_t header;
     header.header_size = read_uint(ifs);
     header.width = read_uint(ifs);
@@ -89,16 +90,16 @@ dib_header_t read_dib_header(std::ifstream& ifs){
 }
 
 int main(int argc, char** argv){
-    std::ifstream ifs (argv[1], std::ifstream::in);
-    if(!ifs.is_open()){
+    FILE* ifs = fopen(argv[1], "rb");
+    if(!ifs){
         std::cout<<"Failed to open file"<<std::endl;
         return 0;
     }
 
     // get length of file:
-    ifs.seekg (0, ifs.end);
-    int length = ifs.tellg();
-    ifs.seekg (0, ifs.beg);
+    fseek(ifs, 0, SEEK_END);
+    int length = ftell(ifs);
+    fseek(ifs, 0, SEEK_SET);
     std::cout<<"stream file length:"<<length<<std::endl;
 
     bmp_header_t bmp_header = read_bmp_header(ifs);
@@ -108,7 +109,7 @@ int main(int argc, char** argv){
     print_dib_header(dib_header);
     std::cout<<"--------------------"<<std::endl;
     
-    unsigned int curr_pos = ifs.tellg();
+    unsigned int curr_pos = ftell(ifs);
     std::cout<<"Beginning to read bitmap data at pos: "<<curr_pos<<std::endl;
 
     std::ofstream ofs ("test_bitmap.txt",std::ios_base::binary);
@@ -116,7 +117,7 @@ int main(int argc, char** argv){
     unsigned int bytes_count = 14 + dib_header.header_size;
     unsigned int chars_read = bytes_count;
     for(int r = 0; r < dib_header.height; r++){
-        ifs.read(buffer, 3 * dib_header.width);
+        chars_read += fread(buffer,sizeof(char) ,3 * dib_header.width,ifs);
         for(int c = 0; c < dib_header.width; c++){
                 uint32_t BLUE = (unsigned char)buffer[(3 * c) + 0];
                 uint32_t GREEN = (unsigned char)buffer[(3 * c) + 1];
@@ -124,31 +125,30 @@ int main(int argc, char** argv){
                 ofs<<r<<" "<<c<<" "<<BLUE<<" "<<GREEN<<" "<<RED<<" "<<std::endl;
         }
         bytes_count+=  3 * dib_header.width;
-        chars_read += ifs.gcount();
         for(int p = 0; p < (dib_header.width % 4); p++){
-            std::cout<<"Reading padding"<<std::endl;
-            ifs.get();
+            //std::cout<<"Reading padding"<<std::endl;
+            fgetc(ifs);
             bytes_count ++;
-            chars_read += ifs.gcount(); 
+            chars_read ++; 
         }
-        if(ifs.eof()){
+        if(feof(ifs)){
             std::cout<<"!!!!Failure in reading file(eof reached)!!!!"<<std::endl;
             break;
         }
-        if(ifs.bad()){
+        if(ferror(ifs)){
             std::cout<<"!!!!Failure in reading file(badbit)!!!!"<<std::endl;
             break;
         }
-        if(ifs.fail()){
+        /*if(ifs.fail()){
             std::cout<<"!!!!Failure in reading file(failbit)!!!!"<<std::endl;
             break;
-        }
+        }*/
     }
     delete[] buffer;
     std::cout<<"Read "<<bytes_count<<" bytes"<<std::endl;
     
 
-    ifs.close();
+    fclose(ifs);
     ofs.close();
 
     return 0;

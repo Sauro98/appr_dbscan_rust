@@ -16,7 +16,9 @@ use std::io::{Write};
 use utils::{Point, DBSCANParams};
 use data_io::*;
 use dbscan::approximate_dbscan;
+
 extern crate partitions;
+extern crate rstar;
 
 
 fn main() {

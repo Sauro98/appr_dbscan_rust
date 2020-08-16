@@ -1,5 +1,6 @@
 use crate::utils::*;
 use std::collections::HashMap;
+use rstar::RTree;
 
 #[derive(Clone)]
 pub struct StatusPoint<const D: usize> {
@@ -30,7 +31,7 @@ impl <const D: usize> Cell<D> {
             points: Vec::new(),
             neighbour_cell_indexes: Vec::new()
         };
-        get_neighbours(index_arr, &mut cell.neighbour_cell_indexes);
+        //get_neighbours(index_arr, &mut cell.neighbour_cell_indexes);
         cell
     }
 }
@@ -46,6 +47,12 @@ pub fn find_cells<const D: usize>(points: &Vec<Point<D>>, params: &DBSCANParams)
                     .or_insert(Cell::new(&index_arr));
         cell.points.push(StatusPoint::new(curr_point));
     }
+    let rtree = RTree::bulk_load(table.keys().map(|k| CellIndexPoint(*k)).collect());
+    for (key, cell) in table.iter_mut() {
+        let neighbours : Vec<CellIndex<D>>= rtree.locate_within_distance(CellIndexPoint(key.clone()), (4 * D) as i64).map(|n| n.0).collect();
+        cell.neighbour_cell_indexes = neighbours;
+    }
+
     table
 }
 

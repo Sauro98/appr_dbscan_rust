@@ -15,4 +15,4 @@ debug-assertions = true
 
 [dependencies]
 partitions = "0.2.4"
-
+rstar = "0.8.2"
