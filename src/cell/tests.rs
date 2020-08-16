@@ -10,9 +10,9 @@ fn find_cells_test(){
         min_pts: 0
     };
     let l = params.epsilon / (params.dimensionality as f64).sqrt();
-    let q = vec![l,-l];
-    let q2 = vec![-l,l];
-    let mut points : Vec<Vec<f64>> = Vec::with_capacity(2);
+    let q = [l,-l];
+    let q2 = [-l,l];
+    let mut points = Vec::with_capacity(2);
     points.push(q.clone());
     points.push(q2.clone());
     let base_table = find_cells(&points, &params);

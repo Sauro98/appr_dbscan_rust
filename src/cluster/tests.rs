@@ -12,11 +12,11 @@ fn clustering_test() {
         min_pts: 2
     };
     let l = params.epsilon / (params.dimensionality as f64).sqrt();
-    let p1 = vec![2.0*l,2.0*l];
-    let p2 = vec![2.0*l,2.0*l];
-    let p3 = vec![2.0*l,2.0*l];
-    let p4 = vec![-5.0*l,-5.0*l];
-    let mut points : Vec<Vec<f64>> = Vec::with_capacity(4);
+    let p1 = [2.0*l,2.0*l];
+    let p2 = [2.0*l,2.0*l];
+    let p3 = [2.0*l,2.0*l];
+    let p4 = [-5.0*l,-5.0*l];
+    let mut points = Vec::with_capacity(4);
     points.push(p1);
     points.push(p2);
     points.push(p3);

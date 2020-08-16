@@ -1,21 +1,21 @@
 use crate::cell::{CellTable};
 use crate::core_cell::{CoreCell, CoreCellTable};
-use crate::utils::{DBSCANParams};
+use crate::utils::*;
 
-pub type Cluster = Vec<Vec<f64>>;
-pub type DBSCANResult = Vec<Cluster>;
+pub type Cluster <const D: usize> = Vec<Point<D>>;
+pub type DBSCANResult <const D: usize> = Vec<Cluster<D>>;
 
 pub const NOISE_CLUSTER_INDEX:usize = 0;
 
-pub fn find_connected_components(s_core: &mut CoreCellTable) -> DBSCANResult{
-    let mut res : DBSCANResult = Vec::new();
-    let noise_cluster : Cluster = Vec::new();
+pub fn find_connected_components<const D: usize>(s_core: &mut CoreCellTable<D>) -> DBSCANResult<D>{
+    let mut res : DBSCANResult<D> = Vec::new();
+    let noise_cluster : Cluster<D> = Vec::new();
     //the noise cluster will be at index 0
     res.push(noise_cluster);
     let mut current_cluster_i: usize = 1;
-    let cloned_keys : Vec<Vec<i64>> = s_core.keys().map(|key| key.clone()).collect();
+    let cloned_keys : Vec<CellIndex<D>> = s_core.keys().map(|key| key.clone()).collect();
     for key in cloned_keys {
-        let mut new_cluster : Cluster = Vec::new();
+        let mut new_cluster : Cluster<D> = Vec::new();
         //lo faccio sempre tanto se la cella e' gia' visitata esce subito 
         explore_cc(s_core, &key, &mut new_cluster, current_cluster_i);
         if !new_cluster.is_empty() {
@@ -26,8 +26,8 @@ pub fn find_connected_components(s_core: &mut CoreCellTable) -> DBSCANResult{
     res
 }
 
-fn explore_cc(s_core: &mut CoreCellTable, index: &Vec<i64>, curr_cluster: &mut Cluster, cluster_i: usize) {
-    let cell : &mut CoreCell = s_core.get_mut(index).unwrap();
+fn explore_cc<const D: usize>(s_core: &mut CoreCellTable<D>, index: &CellIndex<D>, curr_cluster: &mut Cluster<D>, cluster_i: usize) {
+    let cell : &mut CoreCell<D> = s_core.get_mut(index).unwrap();
     if cell.visited {
         return;
     }
@@ -42,7 +42,7 @@ fn explore_cc(s_core: &mut CoreCellTable, index: &Vec<i64>, curr_cluster: &mut C
     }
 }
 
-pub fn assign_border_noise_points(cells: &CellTable, s_core: &CoreCellTable,clusters: &mut DBSCANResult, params: &DBSCANParams) {
+pub fn assign_border_noise_points<const D: usize>(cells: &CellTable<D>, s_core: &CoreCellTable<D>,clusters: &mut DBSCANResult<D>, params: &DBSCANParams) {
     for cell in cells.values() {
         for s_point in &cell.points {
             if !s_point.is_core {
@@ -52,7 +52,7 @@ pub fn assign_border_noise_points(cells: &CellTable, s_core: &CoreCellTable,clus
     }
 }
 
-fn assign_border_noise_point(point: &Vec<f64>,neighbours: &Vec<Vec<i64>>, clusters: &mut DBSCANResult, s_core: &CoreCellTable, params: &DBSCANParams) {
+fn assign_border_noise_point<const D: usize>(point: &Point<D>,neighbours: &Vec<CellIndex<D>>, clusters: &mut DBSCANResult<D>, s_core: &CoreCellTable<D>, params: &DBSCANParams) {
     let mut clusters_in : Vec<usize> = Vec::new();
     for n_index in neighbours {
         match s_core.get(n_index) {
