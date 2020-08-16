@@ -22,8 +22,8 @@ fn clustering_test() {
     points.push(p3);
     points.push(p4);
     let mut base_table = find_cells(&points, &params);
-    let mut s_core = label_points(&mut base_table, &params);
-    let mut result = find_connected_components(&mut s_core);
+    let (mut s_core, mut p_v) = label_points(&mut base_table, &params);
+    let mut result = find_connected_components(&mut s_core, &mut p_v);
     assign_border_noise_points(&base_table, &s_core, &mut result, &params);
     assert_eq!(result.len(), 2);
     assert_eq!(result[NOISE_CLUSTER_INDEX].len(), 1);

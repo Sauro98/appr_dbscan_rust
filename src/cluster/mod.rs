@@ -1,45 +1,32 @@
 use crate::cell::{CellTable};
-use crate::core_cell::{CoreCell, CoreCellTable};
+use crate::core_cell::{CoreCellTable};
 use crate::utils::*;
+use partitions::PartitionVec;
 
 pub type Cluster <const D: usize> = Vec<Point<D>>;
 pub type DBSCANResult <const D: usize> = Vec<Cluster<D>>;
 
 pub const NOISE_CLUSTER_INDEX:usize = 0;
 
-pub fn find_connected_components<const D: usize>(s_core: &mut CoreCellTable<D>) -> DBSCANResult<D>{
+pub fn find_connected_components<const D: usize>(s_core: &mut CoreCellTable<D>, part_vec: & PartitionVec<CellIndex<D>>) -> DBSCANResult<D>{
     let mut res : DBSCANResult<D> = Vec::new();
     let noise_cluster : Cluster<D> = Vec::new();
     //the noise cluster will be at index 0
     res.push(noise_cluster);
     let mut current_cluster_i: usize = 1;
-    let cloned_keys : Vec<CellIndex<D>> = s_core.keys().map(|key| key.clone()).collect();
-    for key in cloned_keys {
+    for set in part_vec.all_sets(){
         let mut new_cluster : Cluster<D> = Vec::new();
-        //lo faccio sempre tanto se la cella e' gia' visitata esce subito 
-        explore_cc(s_core, &key, &mut new_cluster, current_cluster_i);
-        if !new_cluster.is_empty() {
-            res.push(new_cluster);
-            current_cluster_i += 1;
+        for (_,key) in set {
+            let curr_core_cell = s_core.get_mut(key).unwrap();
+            curr_core_cell.i_cluster = current_cluster_i;
+            for point in &curr_core_cell.core_points {
+                new_cluster.push(point.clone());
+            }
         }
+        res.push(new_cluster);
+        current_cluster_i += 1;
     }
     res
-}
-
-fn explore_cc<const D: usize>(s_core: &mut CoreCellTable<D>, index: &CellIndex<D>, curr_cluster: &mut Cluster<D>, cluster_i: usize) {
-    let cell : &mut CoreCell<D> = s_core.get_mut(index).unwrap();
-    if cell.visited {
-        return;
-    }
-    cell.visited = true;
-    cell.i_cluster = cluster_i;
-    for point in &cell.core_points {
-        curr_cluster.push(point.clone());
-    }
-    let cloned_list = cell.adjacency_list.adjacent_vertices.clone();
-    for neighbour_i in &cloned_list {
-        explore_cc(s_core, neighbour_i, curr_cluster, cluster_i);
-    }
 }
 
 pub fn assign_border_noise_points<const D: usize>(cells: &CellTable<D>, s_core: &CoreCellTable<D>,clusters: &mut DBSCANResult<D>, params: &DBSCANParams) {

@@ -20,11 +20,13 @@ fn label_points_test() {
     points.push(p3);
     points.push(p4);
     let mut base_table = find_cells(&points, &params);
-    let s_core = label_points(&mut base_table, &params);
+    let (mut s_core,mut p_v) = label_points(&mut base_table, &params);
+    compute_adjacency_lists(&mut s_core, &params, &mut p_v);
     assert_eq!(base_table.len(), 2);   
     assert_eq!(s_core.len(), 2);
-    for element in s_core.values() {
-        assert_eq!(element.adjacency_list.adjacent_vertices.len(), 1);
+    assert_eq!(p_v.all_sets().count(),1);
+    for set in p_v.all_sets() {
+        assert_eq!(set.count(), 2);
     }
     let p1 = [2.0*l,2.0*l];
     let p2 = [2.0*l,2.0*l];
@@ -36,11 +38,12 @@ fn label_points_test() {
     points.push(p3);
     points.push(p4);
     let mut base_table = find_cells(&points, &params);
-    let s_core = label_points(&mut base_table, &params);
+    let (s_core,p_v) = label_points(&mut base_table, &params);
     assert_eq!(base_table.len(), 2);   
     assert_eq!(s_core.len(), 1);
-    for element in s_core.values() {
-        assert_eq!(element.adjacency_list.adjacent_vertices.len(), 0);
+    assert_eq!(p_v.all_sets().count(),1);
+    for set in p_v.all_sets() {
+        assert_eq!(set.count(), 1);
     }
 
 

@@ -16,6 +16,8 @@ use std::io::{Write};
 use utils::{Point, DBSCANParams};
 use data_io::*;
 use dbscan::approximate_dbscan;
+extern crate partitions;
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -56,7 +58,7 @@ fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str) {
     let now = Instant::now();
     let res = approximate_dbscan(&points, &params);
     println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
-    let mut gp_file = match File::create("./plot.gp".to_string()) {
+    /*let mut gp_file = match File::create("./plot.gp".to_string()) {
         Err(why) => panic!("couldn't create {}:", why),
         Ok(file) => file,
     };
@@ -69,16 +71,17 @@ fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str) {
         };
     
         for j in 0..res[i].len() {
-            for k in 0..D{
+            //TODO::D
+            for k in 0..2{
                 cluster_file.write(&res[i][j][k].to_string().as_bytes()).unwrap();
                 cluster_file.write(&" ".as_bytes()).unwrap();
             }
             cluster_file.write(&"\n".as_bytes()).unwrap();
         }
         
-        gp_file.write(("\"".to_string()+&filename+&"\" using 1:2 pt \".\" lw 1,\\".to_string()).as_bytes()).unwrap();
+        gp_file.write(("\"".to_string()+&filename+&"\" using 1:2 pt \"■\" lw 1 ps 0.001, \\".to_string()).as_bytes()).unwrap();
         gp_file.write(&"\n".as_bytes()).unwrap();
-    }
+    }*/
 }
 
 fn print_help(){

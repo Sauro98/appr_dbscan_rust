@@ -121,8 +121,7 @@ int main(int argc, char** argv){
                 uint32_t BLUE = (unsigned char)buffer[(3 * c) + 0];
                 uint32_t GREEN = (unsigned char)buffer[(3 * c) + 1];
                 uint32_t RED = (unsigned char)buffer[(3 * c) + 2];
-                ofs<<r<<" "<<c<<" "<<BLUE<<" "/*<<GREEN<<" "<<RED<<" "*/<<std::endl;
-                 
+                ofs<<r<<" "<<c<<" "<<BLUE<<" "<<GREEN<<" "<<RED<<" "<<std::endl;
         }
         bytes_count+=  3 * dib_header.width;
         chars_read += ifs.gcount();
