@@ -8,10 +8,10 @@ edition = "2018"
 
 [profile.release]
 opt-level = "s"
-debug = 2
 lto = true
 incremental = true
-debug-assertions = true
+#debug = 2
+#debug-assertions = true
 
 [dependencies]
 partitions = "0.2.4"

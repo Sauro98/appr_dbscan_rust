@@ -1,6 +1,7 @@
 use crate::utils::*;
 use std::collections::HashMap;
 use rstar::RTree;
+use crate::tree_structure::TreeStructure;
 
 #[derive(Clone)]
 pub struct StatusPoint<const D: usize> {
@@ -18,10 +19,29 @@ impl <const D: usize> StatusPoint<D> {
 }
 
 #[derive(Clone)]
+pub struct CoreCellInfo <const D: usize>{
+    pub root: TreeStructure<D>,
+    pub i_cluster: usize,
+    pub uf_index: usize
+}
+
+impl <const D: usize> CoreCellInfo<D>{
+    fn new() -> CoreCellInfo<D> {
+        CoreCellInfo{
+            root: TreeStructure::new_empty(),
+            i_cluster: 0,
+            uf_index: 0
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Cell <const D: usize>{
     pub index: CellIndex<D>,
     pub points: Vec<StatusPoint<D>>,
     pub neighbour_cell_indexes: Vec<CellIndex<D>>,
+    pub is_core: bool,
+    pub core_info: CoreCellInfo<D>,
 }
 
 impl <const D: usize> Cell<D> {
@@ -29,8 +49,10 @@ impl <const D: usize> Cell<D> {
         Cell {
             index: index_arr.clone(),
             points: Vec::new(),
-            //TODo::size
-            neighbour_cell_indexes: Vec::new()
+            //TODO::size
+            neighbour_cell_indexes: Vec::new(),
+            is_core: false,
+            core_info: CoreCellInfo::new()
         }
         //get_neighbours(index_arr, &mut cell.neighbour_cell_indexes);
     }
