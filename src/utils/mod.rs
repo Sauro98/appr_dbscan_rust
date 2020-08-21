@@ -141,7 +141,7 @@ fn get_corners<const D: usize>(cell_center: &CellCenter<D>, side_size: f64) -> V
 
 }*/
 
-fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
+/*fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
     let maximum_distance = (D as f64).sqrt().ceil() as i64;
     let mut new_index = index_c.clone(); 
     let j_ind = index_c[j];
@@ -155,9 +155,9 @@ fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIn
             }
         }
     }
-}
+}*/
 
-fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
+/*fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
     let mut dist : usize = 0;
     for j in 0..i_1.len() {
         dist += (i_1[j] - i_2[j]).pow(2) as usize;
@@ -168,7 +168,7 @@ fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> us
 pub fn get_neighbours<const D: usize>(reference: &CellIndex<D>, neighbours: &mut Vec<CellIndex<D>>){
     let new_index = reference.clone();
     get_neighbours_rec(reference, &new_index, 0, neighbours);
-}
+}*/
 
 
 

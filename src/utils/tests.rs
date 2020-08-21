@@ -114,13 +114,13 @@ fn determine_intersection_test() {
     assert_eq!(intersection, expected_type);
 }
 
-#[test]
+/*#[test]
 fn get_neighbours_test(){
     let cell_index = [0,0];
     let mut neighbours = Vec::with_capacity(21);
     get_neighbours(&(cell_index), &mut neighbours);
     assert_eq!(neighbours.len(), 21);
-}
+}*/
 
 #[test]
 fn get_cell_index_test() {

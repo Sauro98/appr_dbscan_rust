@@ -25,7 +25,7 @@ impl <const D: usize> TreeStructure<D> {
     pub fn build_structure(points: &Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
         let max_children_count = 2_usize.pow(params.dimensionality);
         //TODO::?1??
-        let mut root = TreeStructure::new(1, &[0;D], -1,0.0);
+        let mut root = TreeStructure::new(max_children_count, &[0;D], -1,0.0);
         root.cnt = points.len();
         let mut levels_count: i32 = (1.0/params.rho).log(2.0).ceil() as i32;
         if levels_count < 1 {
@@ -33,10 +33,11 @@ impl <const D: usize> TreeStructure<D> {
         }
         for point in points {
             let mut curr_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
-            let index_arr = get_cell_index(point, curr_side_size);
+            /*let index_arr = get_cell_index(point, curr_side_size);
             let mut prev_child : &mut TreeStructure<D> =
                 root.children.entry(index_arr.clone())
-                .or_insert(TreeStructure::new(max_children_count as usize, &index_arr, 0, curr_side_size));
+                .or_insert(TreeStructure::new(max_children_count as usize, &index_arr, 0, curr_side_size));*/
+            let mut prev_child = &mut root;
             prev_child.cnt += 1;
             //let mut prev_child = &mut root;
             for i in 1..levels_count {

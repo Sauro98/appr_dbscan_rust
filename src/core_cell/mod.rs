@@ -49,7 +49,7 @@ fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
 
 pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> (CoreCellTable<D>, PartitionVec<CellIndex<D>>) {
     let mut part_vec : PartitionVec<CellIndex<D>> = PartitionVec::with_capacity(params.cardinality);
-    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality as usize);
+    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality);
     let cells_cloned = cells.clone();
     for cell in cells.values_mut() {
         if cell.points.len() >= params.min_pts {
@@ -61,7 +61,7 @@ pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANPar
     (s_core, part_vec)
 }
 
-fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
+fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: & DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
     let mut core_cell = CoreCell::new(cell.neighbour_cell_indexes.clone(),uf_str.len());
     uf_str.push(cell.index);
     for mut s_point in &mut cell.points {

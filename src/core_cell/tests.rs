@@ -19,7 +19,7 @@ fn label_points_test() {
     points.push(p2);
     points.push(p3);
     points.push(p4);
-    let mut base_table = find_cells(&points, &params);
+    let mut base_table = find_cells(points, &params);
     let (mut s_core,mut p_v) = label_points(&mut base_table, &params);
     compute_adjacency_lists(&mut s_core, &params, &mut p_v);
     assert_eq!(base_table.len(), 2);   
@@ -37,7 +37,7 @@ fn label_points_test() {
     points.push(p2);
     points.push(p3);
     points.push(p4);
-    let mut base_table = find_cells(&points, &params);
+    let mut base_table = find_cells(points, &params);
     let (s_core,p_v) = label_points(&mut base_table, &params);
     assert_eq!(base_table.len(), 2);   
     assert_eq!(s_core.len(), 1);
