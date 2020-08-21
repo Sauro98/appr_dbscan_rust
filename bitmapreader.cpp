@@ -116,7 +116,7 @@ int main(int argc, char** argv){
     char * buffer  = new char [3 * dib_header.width];
     unsigned int bytes_count = 14 + dib_header.header_size;
     unsigned int chars_read = bytes_count;
-    for(int r = 0; r < dib_header.height / 2; r++){
+    for(int r = 0; r < dib_header.height; r++){
         chars_read += fread(buffer,sizeof(char) ,3 * dib_header.width,ifs);
         for(int c = 0; c < dib_header.width; c++){
                 uint32_t BLUE = (unsigned char)buffer[(3 * c) + 0];
