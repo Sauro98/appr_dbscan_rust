@@ -58,7 +58,7 @@ fn do_dbscan(params: &DBSCANParams, file_name: &str){
 fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str) {
     let points: Vec<Point<D>> = read_points_from_file(file_name, &params);
     let now = Instant::now();
-    let _res = approximate_dbscan(points, &params);
+    let res = approximate_dbscan(points, &params);
     println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
     /*let mut gp_file = match File::create("./plot.gp".to_string()) {
         Err(why) => panic!("couldn't create {}:", why),
@@ -84,6 +84,7 @@ fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str) {
         gp_file.write(("\"".to_string()+&filename+&"\" using 1:2 pt \"■\" lw 1 ps 0.001, \\".to_string()).as_bytes()).unwrap();
         gp_file.write(&"\n".as_bytes()).unwrap();
     }*/
+    write_to_bmp(&res);
 }
 
 fn print_help(){
