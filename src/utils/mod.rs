@@ -1,11 +1,15 @@
 use rstar::{Point as RPoint};
 
+/// Type that represents a point with dimensionality D
 pub type Point<const D: usize> = [f64;D];
 pub type CellIndex<const D: usize> = [i64;D];
 pub type CellCenter<const D: usize> = Point<D>;
 
 #[derive(Clone,Copy,PartialEq,Debug)]
-pub struct CellIndexPoint<const D: usize>(pub [i64;D]);
+/// 
+pub struct CellIndexPoint<const D: usize>{
+    pub index: CellIndex<D>
+}
 
 impl <const D:usize> RPoint for CellIndexPoint<D>{
     
@@ -14,16 +18,16 @@ impl <const D:usize> RPoint for CellIndexPoint<D>{
 
     fn generate(generator: impl Fn(usize) -> Self::Scalar) -> Self
     {
-        let mut r : CellIndexPoint<D> = CellIndexPoint([0;D]);
+        let mut r : CellIndexPoint<D> = CellIndexPoint{index: [0;D]};
         for i in 0..D {
-            r.0[i] = generator(i);
+            r.index[i] = generator(i);
         }
         r
     }
 
     fn nth(&self, index: usize) -> Self::Scalar{
         if index < D {
-            self.0[index]
+            self.index[index]
         } else {
             unreachable!()
         }
@@ -32,12 +36,13 @@ impl <const D:usize> RPoint for CellIndexPoint<D>{
     fn nth_mut(&mut self, index: usize) -> &mut Self::Scalar
     {
         if index < D {
-            &mut self.0[index]
+            &mut self.index[index]
         } else {
             unreachable!()
         }
     }
 }
+
 
 pub struct DBSCANParams{
     pub cardinality: usize,
@@ -56,12 +61,11 @@ pub enum IntersectionType{
 
 pub fn euclidean_distance<const D: usize>(p: &Point<D>, q: &Point<D>) -> f64 {
     let mut sum : f64 = 0.0;
-    for i in 0..p.len(){
+    for i in 0..D{
         sum += (p[i]-q[i]).powf(2_f64);
     }
     sum.sqrt()
 }
-
 
 pub fn determine_intersection<const D: usize>(q: &Point<D>, params: &DBSCANParams, index_c: &CellIndex<D>, side_size:f64) -> IntersectionType{
     let n_corners = (2_usize.pow(D as u32)) as usize;
@@ -115,62 +119,6 @@ fn get_corners<const D: usize>(cell_center: &CellCenter<D>, side_size: f64) -> V
     }
     corners
 }
-
-/*pub fn get_neighbours<const D: usize>(reference: &CellIndex<D>, neighbours: &mut Vec<CellIndex<D>>){
-    //ho D elementi del vettore, ognuno dei quali puo' avere  (2 * ceil(sqrt(D)) + 1) = b valori.
-    //posso allora fare lo stesso ragionamento fatto per gli angoli, usando un codice b-ario invece che
-    //binario. Parto da un vettore con tutti i suoi valori a reference[i] - ceil(sqrt(D)) (0), e poi aggiungo 
-    //da 1 fino a b in base al valore del b-bit corrispondente. Ho in totale b^D combinazioni
-    let maximum_distance = (D as f64).sqrt().ceil() as usize;
-    let base = (2_usize * maximum_distance)+ 1;
-    let top = base.pow(D as u32);
-    let starting_point = - 1 * maximum_distance as i64;
-    for b_base_rep in 0..top {
-        let mut curr_n = reference.clone();
-        let mut val = b_base_rep;
-        let mut c_pow_b = top/base;
-        for b_bit_i in 0..D {
-            curr_n[b_bit_i] += starting_point + (val / c_pow_b) as i64;
-            val %= c_pow_b;
-            c_pow_b /= base;
-        }
-        if index_distance(reference, &curr_n) < 4 * D {
-            neighbours.push(curr_n);
-        }
-    }
-
-}*/
-
-/*fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
-    let maximum_distance = (D as f64).sqrt().ceil() as i64;
-    let mut new_index = index_c.clone(); 
-    let j_ind = index_c[j];
-    for nval in j_ind - maximum_distance ..= j_ind + maximum_distance {
-        new_index[j] = nval;    
-        if j < index_c.len() - 1{
-            get_neighbours_rec(reference, &new_index, j + 1, neighbours);
-        } else {
-            if index_distance(reference, &new_index) < 4 * D {
-                neighbours.push(new_index.clone());
-            }
-        }
-    }
-}*/
-
-/*fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
-    let mut dist : usize = 0;
-    for j in 0..i_1.len() {
-        dist += (i_1[j] - i_2[j]).pow(2) as usize;
-    }
-    dist
-}
-
-pub fn get_neighbours<const D: usize>(reference: &CellIndex<D>, neighbours: &mut Vec<CellIndex<D>>){
-    let new_index = reference.clone();
-    get_neighbours_rec(reference, &new_index, 0, neighbours);
-}*/
-
-
 
 pub fn get_cell_index<const D: usize>(p: &Point<D>, side_size: f64) -> CellIndex<D>{
     let mut new_index = [0;D];

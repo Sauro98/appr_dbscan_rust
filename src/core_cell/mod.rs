@@ -1,31 +1,7 @@
 use crate::cell::*;
 use crate::utils::*;
-use std::collections::HashMap;
 use crate::tree_structure::TreeStructure;
 use partitions::PartitionVec;
-
-#[derive(Clone)]
-pub struct CoreCell <const D: usize>{
-    pub core_points: Vec<Point<D>>,
-    pub neighbour_cell_indexes: Vec<CellIndex<D>>,
-    pub root: TreeStructure<D>,
-    pub i_cluster: usize,
-    uf_index: usize
-}
-
-impl <const D: usize> CoreCell<D> {
-    pub fn new(neighbour_cell_indexes: Vec<CellIndex<D>>, uf_index: usize) -> CoreCell<D> {
-        CoreCell {
-            core_points: Vec::new(),
-            neighbour_cell_indexes: neighbour_cell_indexes,
-            root: TreeStructure::new(0,&[0;D],0,0.0),
-            i_cluster: 0,
-            uf_index: uf_index
-        }
-    }
-}
-
-pub type CoreCellTable <const D: usize> = HashMap<CellIndex<D>, CoreCell<D>>;
 
 
 fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
@@ -47,35 +23,36 @@ fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
     true
 }
 
-pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> (CoreCellTable<D>, PartitionVec<CellIndex<D>>) {
-    let mut part_vec : PartitionVec<CellIndex<D>> = PartitionVec::with_capacity(params.cardinality);
-    let mut s_core : CoreCellTable<D> = HashMap::with_capacity(params.cardinality);
+pub fn label_points<const D: usize>(cells: &mut CellTable<D>, params: &DBSCANParams) -> PartitionVec<CellIndex<D>> {
+    //nella struttura union find si andranno ad inserire le celle di core trovate, che sicuramente sono al massimo nello stesso numero delle 
+    //celle non di core
+    let mut part_vec : PartitionVec<CellIndex<D>> = PartitionVec::with_capacity(cells.len());
     let cells_cloned = cells.clone();
     for cell in cells.values_mut() {
         if cell.points.len() >= params.min_pts {
-            label_dense_cell(cell, &mut s_core, params, &mut part_vec);
+            label_dense_cell(cell, params, &mut part_vec);
         } else {
-            label_sparse_cell(&cells_cloned, cell, &mut s_core, params, &mut part_vec)
+            label_sparse_cell(&cells_cloned, cell, params, &mut part_vec)
         }
     }
-    (s_core, part_vec)
+    part_vec
 }
 
-fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: & DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
-    let mut core_cell = CoreCell::new(cell.neighbour_cell_indexes.clone(),uf_str.len());
+fn label_dense_cell<const D: usize>(cell: &mut Cell<D>, params: & DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
+    cell.is_core = true;
+    cell.core_info.uf_index = uf_str.len();
+    let points : Vec<Point<D>> = cell.points.iter().map(|x| x.point).collect();
+    cell.core_info.root = TreeStructure::build_structure(points, params);
     uf_str.push(cell.index);
     for mut s_point in &mut cell.points {
         s_point.is_core = true;
-        core_cell.core_points.push(s_point.point.clone())
     }
-    core_cell.root = TreeStructure::build_structure(&core_cell.core_points, params);
-    s_core.insert(cell.index.clone(), core_cell);
 }
 
 
-fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell<D>, s_core: &mut CoreCellTable<D>, params: &DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
-    let mut is_core_cell = false;
+fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell<D>, params: &DBSCANParams, uf_str: &mut PartitionVec<CellIndex<D>>){
     let len = curr_cell.points.len();
+    let mut points : Vec<Point<D>> = Vec::with_capacity(curr_cell.points.len());
     for mut s_point in &mut curr_cell.points {
         let mut tot_pts = len;
         for n_index in &curr_cell.neighbour_cell_indexes {
@@ -89,36 +66,39 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
             }
         }
         if tot_pts >= params.min_pts {
-            is_core_cell = true;
             s_point.is_core = true;
-            let tmp_ind = curr_cell.index.clone();
-            let tmp_n_i = curr_cell.neighbour_cell_indexes.clone();
-            let core_cell = s_core.entry(curr_cell.index.clone())
-                .or_insert_with(||{
-                    uf_str.push(tmp_ind);
-                    CoreCell::new(tmp_n_i, uf_str.len() - 1)
-                });
-            core_cell.core_points.push(s_point.point.clone());
+            if !curr_cell.is_core {
+                curr_cell.is_core = true;
+                curr_cell.core_info.uf_index = uf_str.len();
+                uf_str.push(curr_cell.index.clone());
+            }
+            points.push(s_point.point.clone());
         }
     }
-    if is_core_cell {
-        let mut core_cell = s_core.get_mut(&curr_cell.index).unwrap();
-        core_cell.root = TreeStructure::build_structure(&core_cell.core_points, params);
+    if curr_cell.is_core {
+        curr_cell.core_info.root = TreeStructure::build_structure(points, params);
     }
 }
 
-pub fn compute_adjacency_lists<const D: usize>(s_core:  &mut CoreCellTable<D>, params: &DBSCANParams, part_vec: &mut PartitionVec<CellIndex<D>>){
-    for core_cell in s_core.values() {
-        for n_index in &core_cell.neighbour_cell_indexes {
-            match s_core.get(n_index) {
+pub fn compute_adjacency_lists<const D: usize>(cells:  &mut CellTable<D>, params: &DBSCANParams, part_vec: &mut PartitionVec<CellIndex<D>>){
+    for cell in cells.values() {
+        if ! cell.is_core {
+            continue;
+        }
+        for n_index in &cell.neighbour_cell_indexes {
+            match cells.get(n_index) {
                 Some(neighbour) => {
-                    if part_vec.same_set(core_cell.uf_index, neighbour.uf_index){
-                        continue;
-                    }
-                    for point in &core_cell.core_points {
-                        if neighbour.root.approximate_range_counting_root(point, params) != 0 {
-                            part_vec.union(core_cell.uf_index, neighbour.uf_index);
-                            break;
+                    if neighbour.is_core {
+                        if part_vec.same_set(cell.core_info.uf_index, neighbour.core_info.uf_index){
+                            continue;
+                        }
+                        for point in &cell.points {
+                            if point.is_core {
+                                if neighbour.core_info.root.approximate_range_counting_root(&point.point, params) != 0 {
+                                    part_vec.union(cell.core_info.uf_index, neighbour.core_info.uf_index);
+                                    break;
+                                }
+                            }
                         }
                     }
                 },

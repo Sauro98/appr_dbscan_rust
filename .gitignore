@@ -14,3 +14,8 @@ bitmapreader.exe
 blk_circles.bmp
 crcls2.bmp
 /gp_srcs
+*.bmp
+*.cmd
+*.gp
+/imgs
+.vs/slnx.sqlite
