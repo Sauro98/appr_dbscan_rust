@@ -1,5 +1,7 @@
 use crate::utils::*;
 use std::collections::HashMap;
+use rstar::RTree;
+use crate::tree_structure::TreeStructure;
 
 #[derive(Clone)]
 pub struct StatusPoint<const D: usize> {
@@ -8,10 +10,27 @@ pub struct StatusPoint<const D: usize> {
 }
 
 impl <const D: usize> StatusPoint<D> {
-    fn new(point: &Point<D>) -> StatusPoint<D> {
+    fn new(point: Point<D>) -> StatusPoint<D> {
         StatusPoint {
-            point: point.clone(),
+            point: point,
             is_core: false
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct CoreCellInfo <const D: usize>{
+    pub root: TreeStructure<D>,
+    pub i_cluster: usize,
+    pub uf_index: usize
+}
+
+impl <const D: usize> CoreCellInfo<D>{
+    fn new() -> CoreCellInfo<D> {
+        CoreCellInfo{
+            root: TreeStructure::new_empty(),
+            i_cluster: 0,
+            uf_index: 0
         }
     }
 }
@@ -20,33 +39,42 @@ impl <const D: usize> StatusPoint<D> {
 pub struct Cell <const D: usize>{
     pub index: CellIndex<D>,
     pub points: Vec<StatusPoint<D>>,
-    pub neighbour_cell_indexes: Vec<CellIndex<D>>
+    pub neighbour_cell_indexes: Vec<CellIndex<D>>,
+    pub is_core: bool,
+    pub core_info: CoreCellInfo<D>,
 }
 
 impl <const D: usize> Cell<D> {
     fn new(index_arr: &CellIndex<D>) -> Cell<D>{
-        let mut cell = Cell {
+        Cell {
             index: index_arr.clone(),
             points: Vec::new(),
-            neighbour_cell_indexes: Vec::new()
-        };
-        get_neighbours(index_arr, &mut cell.neighbour_cell_indexes);
-        cell
+            //TODO::size
+            neighbour_cell_indexes: Vec::new(),
+            is_core: false,
+            core_info: CoreCellInfo::new()
+        }
+        //get_neighbours(index_arr, &mut cell.neighbour_cell_indexes);
     }
 }
 
 pub type CellTable <const D: usize> = HashMap<CellIndex<D>, Cell<D>>;
 
-pub fn find_cells<const D: usize>(points: &Vec<Point<D>>, params: &DBSCANParams) -> CellTable<D> {
-    let mut table : CellTable<D> = HashMap::with_capacity(params.cardinality as usize);
-    println!("cell_size {} ", params.epsilon/(params.dimensionality as f64).sqrt());
-    for p_i in 0..params.cardinality as usize {
-        let curr_point = &points[p_i];
-        let index_arr = get_base_cell_index(curr_point, params);
+pub fn find_cells<const D: usize>(points: Vec<Point<D>>, params: &DBSCANParams) -> CellTable<D> {
+    let mut table : CellTable<D> = CellTable::with_capacity(params.cardinality);
+    for p_i in 0..params.cardinality {
+        let curr_point = points[p_i];
+        let index_arr = get_base_cell_index(&curr_point, params);
         let cell = table.entry(index_arr.clone())
                     .or_insert(Cell::new(&index_arr));
         cell.points.push(StatusPoint::new(curr_point));
     }
+    let rtree = RTree::bulk_load(table.keys().map(|k| CellIndexPoint{index: *k}).collect());
+    for (key, cell) in table.iter_mut() {
+        let neighbours : Vec<CellIndex<D>>= rtree.locate_within_distance(CellIndexPoint{index: key.clone()}, (4 * D) as i64).map(|n| n.index).collect();
+        cell.neighbour_cell_indexes = neighbours;
+    }
+
     table
 }
 

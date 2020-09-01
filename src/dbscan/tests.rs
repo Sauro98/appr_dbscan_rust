@@ -12,7 +12,7 @@ fn dbscan_test_1() {
     params.epsilon = 0.3;
     params.min_pts = 10;
     params.rho = 0.1;
-    let res = approximate_dbscan(&points, &params);
+    let res = approximate_dbscan(points, &params);
     let exp_noise = 0;
     assert_eq!(res[0].len(), exp_noise);
     let exp_clusters = 5;
@@ -28,7 +28,7 @@ fn dbscan_test_2() {
     params.epsilon = 0.3;
     params.min_pts = 10;
     params.rho = 0.1;
-    let res = approximate_dbscan(&points, &params);
+    let res = approximate_dbscan(points, &params);
     let exp_noise = 0;
     assert_eq!(res[0].len(), exp_noise);
     let exp_clusters = 8;

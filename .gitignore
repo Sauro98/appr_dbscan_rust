@@ -7,8 +7,14 @@ test_bitmap.txt
 .vs/VSWorkspaceState.json
 .vs/VSWorkspaceState.json
 .vscode/settings.json
+.vs/appr_dbscan_rust/v16/.suo
+.vs/appr_dbscan_rust/v16/Browse.VC.db
+bitmapreader.cpp
 *.exe
-*.bmp 
+*.bmp
 /gp_srcs
+*.bmp
 *.cmd
 *.gp
+/imgs
+.vs/slnx.sqlite

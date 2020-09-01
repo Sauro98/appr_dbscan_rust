@@ -15,7 +15,7 @@ fn build_structure_test() {
     let mut points : Vec<Point<2>> = Vec::with_capacity(2);
     points.push(q);
     points.push(q2);
-    let _root = TreeStructure::build_structure(&points, &params);
+    let _root = TreeStructure::build_structure(points, &params);
 }
 
 #[test]
@@ -33,7 +33,7 @@ fn counting_test(){
     let mut points : Vec<Point<2>> = Vec::with_capacity(2);
     points.push(q.clone());
     points.push(q2.clone());
-    let root = TreeStructure::build_structure(&points, &params);
+    let root = TreeStructure::build_structure(points, &params);
     let central = [0.0,0.0];
     let far = [10.0*l, 10.0*l];
     assert_eq!(root.approximate_range_counting_root(&q, &params),1);

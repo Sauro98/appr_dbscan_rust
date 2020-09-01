@@ -11,39 +11,53 @@ pub struct TreeStructure<const D: usize>{
 }
 
 impl <const D: usize> TreeStructure<D> {
-    pub fn new(childrens_est: usize,cell_index: &CellIndex<D>, level: i32, side_size: f64) -> TreeStructure<D> {
+    pub fn new(cell_index: &CellIndex<D>, level: i32, side_size: f64) -> TreeStructure<D> {
         let structure = TreeStructure {
             cell_index: cell_index.clone(),
             level: level,
             cnt: 0,
             side_size: side_size,
-            children: HashMap::with_capacity(childrens_est)
+            // mettere sempre 2^D come dimensione assicura che non ci siano riallocazione ma occupa 
+            // troppo spazio. sembra che funzioni piu' velocemente senza dare una capacity
+            children: HashMap::new()
         };
         structure
     }
 
-    pub fn build_structure(points: &Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
-        let max_children_count = 2_usize.pow(params.dimensionality);
-        let mut root = TreeStructure::new(points.len(), &[0;D], -1,0.0);
-        root.cnt = points.len();
-        let mut levels_count: i32 = (1.0/params.rho).log(2.0).ceil() as i32;
+    pub fn new_empty() -> TreeStructure<D>{
+        TreeStructure{
+            cell_index: [0;D],
+            level: 0,
+            cnt: 0,
+            side_size: 0.0,
+            children: HashMap::with_capacity(0)
+        }
+    }
+
+    pub fn build_structure(points: Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
+        let base_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
+        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
         if levels_count < 1 {
             levels_count = 1;
         }
-        for point in points {
-            let mut curr_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
-            let index_arr = get_cell_index(point, curr_side_size);
-            let mut prev_child : &mut TreeStructure<D> =
-                root.children.entry(index_arr.clone())
-                .or_insert(TreeStructure::new(max_children_count as usize, &index_arr, 0, curr_side_size));
+        
+        //In questo programma viene creata una struttura ad albero per ogni cella e quindi si
+        //sa gia' che tutti i punti della cella appartengono a root. Si procede dunque subito a dividere 
+        //root in 2^d sottocelle.
+        let mut root = TreeStructure::new(&[0;D], -1,base_side_size);
+        root.cnt = points.len();
+        
+        for point in &points {
+            let mut curr_side_size = base_side_size;
+            let mut prev_child = &mut root;
             prev_child.cnt += 1;
-            //let mut prev_child = &mut root;
+            //il livello 0 è occupato dalla radice
             for i in 1..levels_count {
                 curr_side_size = curr_side_size / 2.0;
                 let index_arr = get_cell_index(point, curr_side_size);
                 let curr_child : &mut TreeStructure<D> =
                     prev_child.children.entry(index_arr.clone())
-                    .or_insert(TreeStructure::new(max_children_count as usize, &index_arr, i, curr_side_size));
+                    .or_insert(TreeStructure::new(&index_arr, i, curr_side_size));
                 curr_child.cnt += 1;
                 prev_child = curr_child;
             }
@@ -61,7 +75,7 @@ impl <const D: usize> TreeStructure<D> {
 
     fn approximate_range_counting(&self, q: &Point<D>, params: &DBSCANParams) -> usize {
         let mut ans : usize = 0;
-        let mut levels_count: i32 = (1.0/params.rho).log(2.0).ceil() as i32;
+        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
         if levels_count < 1 {
             levels_count = 1;
         }

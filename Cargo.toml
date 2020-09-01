@@ -7,12 +7,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [profile.release]
-opt-level = "s"
-debug = 2
+opt-level = 2
 lto = true
 incremental = true
-debug-assertions = true
+debug = 2
+#debug-assertions = true
 
 [dependencies]
-
-
+partitions = "0.2.4"
+rstar = "0.8.2"
