@@ -78,49 +78,49 @@ fn determine_intersection_test() {
     let cell_index_3 = [0,2];
     let cell_index_4 = [1,2];
     let expected_type = IntersectionType::FullyCovered;
-    let intersection = determine_intersection(&q, &params, &cell_index_1, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_1), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_2, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_2), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_3, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_3), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_4, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_4), l);
     assert_eq!(intersection, expected_type);
     let cell_index_1 = [-1,1];
     let cell_index_2 = [-1,2];
     let cell_index_3 = [2,2];
     let cell_index_4 = [2,1];
     let expected_type = IntersectionType::Intersecting;
-    let intersection = determine_intersection(&q, &params, &cell_index_1, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_1), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_2, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_2), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_3, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_3), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_4, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_4), l);
     assert_eq!(intersection, expected_type);
     let cell_index_1 = [3,3];
     let cell_index_2 = [3,2];
     let cell_index_3 = [-2,2];
     let cell_index_4 = [-2,1];
     let expected_type = IntersectionType::Disjoint;
-    let intersection = determine_intersection(&q, &params, &cell_index_1, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_1), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_2, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_2), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_3, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_3), l);
     assert_eq!(intersection, expected_type);
-    let intersection = determine_intersection(&q, &params, &cell_index_4, l);
+    let intersection = determine_intersection(&q, &params, &(cell_index_4), l);
     assert_eq!(intersection, expected_type);
 }
 
-#[test]
+/*#[test]
 fn get_neighbours_test(){
     let cell_index = [0,0];
     let mut neighbours = Vec::with_capacity(21);
-    get_neighbours(&cell_index, &mut neighbours);
+    get_neighbours(&(cell_index), &mut neighbours);
     assert_eq!(neighbours.len(), 21);
-}
+}*/
 
 #[test]
 fn get_cell_index_test() {

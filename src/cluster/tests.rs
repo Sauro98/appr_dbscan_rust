@@ -1,6 +1,6 @@
 use super::*;
 use crate::cell::find_cells;
-use crate::core_cell::label_points;
+use crate::core_cell::{label_points,compute_adjacency_lists};
 
 #[test]
 fn clustering_test() {
@@ -21,10 +21,11 @@ fn clustering_test() {
     points.push(p2);
     points.push(p3);
     points.push(p4);
-    let mut base_table = find_cells(&points, &params);
-    let mut s_core = label_points(&mut base_table, &params);
-    let mut result = find_connected_components(&mut s_core);
-    assign_border_noise_points(&base_table, &s_core, &mut result, &params);
+    let mut base_table = find_cells(points, &params);
+    let mut p_v = label_points(&mut base_table, &params);
+    compute_adjacency_lists(&mut base_table, &params, &mut p_v);
+    let mut result = find_connected_components(&mut base_table, p_v);
+    assign_border_noise_points(&base_table, &mut result, &params);
     assert_eq!(result.len(), 2);
     assert_eq!(result[NOISE_CLUSTER_INDEX].len(), 1);
     assert_eq!(result[1].len(), 3);
