@@ -4,6 +4,17 @@ use crate::core_cell::{label_points,compute_adjacency_lists};
 use crate::utils::*;
 use std::time::{Instant};
 
+/// Function that runs the approximate DBSCAN algorithm on the given set of points with the given params.
+/// 
+/// # Arguments
+/// 
+/// * `points` - A vector of `Point` elements to cluster.
+/// * `params` - A reference to a `DBSCANParams` struct that holds the clustering parameters
+/// 
+/// # Return 
+/// 
+/// An element of type `DBSCANResult`, in which the first cluster contains the noise points. The total number of cluster then
+/// is one less than the length of the result returned. 
 pub fn approximate_dbscan<const D: usize>(points: Vec<Point<D>>, params: &DBSCANParams) -> DBSCANResult<D> {
     let now = Instant::now();
     let mut base_cells = find_cells(points, params);

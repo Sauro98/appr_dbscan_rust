@@ -20,7 +20,6 @@ use dbscan::approximate_dbscan;
 extern crate partitions;
 extern crate rstar;
 
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() != 5 {

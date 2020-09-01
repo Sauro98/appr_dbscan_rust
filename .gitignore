@@ -17,3 +17,5 @@ crcls2.bmp
 *.bmp
 *.cmd
 *.gp
+/imgs
+.vs/slnx.sqlite

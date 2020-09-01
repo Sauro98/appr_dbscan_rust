@@ -36,7 +36,7 @@ impl <const D: usize> TreeStructure<D> {
 
     pub fn build_structure(points: Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
         let base_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
-        let mut levels_count: i32 = (1.0/params.rho).log(2.0).ceil() as i32;
+        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
         if levels_count < 1 {
             levels_count = 1;
         }
@@ -51,7 +51,8 @@ impl <const D: usize> TreeStructure<D> {
             let mut curr_side_size = base_side_size;
             let mut prev_child = &mut root;
             prev_child.cnt += 1;
-            for i in 1..=levels_count {
+            //il livello 0 è occupato dalla radice
+            for i in 1..levels_count {
                 curr_side_size = curr_side_size / 2.0;
                 let index_arr = get_cell_index(point, curr_side_size);
                 let curr_child : &mut TreeStructure<D> =
@@ -74,7 +75,7 @@ impl <const D: usize> TreeStructure<D> {
 
     fn approximate_range_counting(&self, q: &Point<D>, params: &DBSCANParams) -> usize {
         let mut ans : usize = 0;
-        let mut levels_count: i32 = (1.0/params.rho).log(2.0).ceil() as i32;
+        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
         if levels_count < 1 {
             levels_count = 1;
         }

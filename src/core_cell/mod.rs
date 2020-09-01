@@ -81,7 +81,10 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
 }
 
 pub fn compute_adjacency_lists<const D: usize>(cells:  &mut CellTable<D>, params: &DBSCANParams, part_vec: &mut PartitionVec<CellIndex<D>>){
-    for cell in cells.values().filter(|x| x.is_core) {
+    for cell in cells.values() {
+        if ! cell.is_core {
+            continue;
+        }
         for n_index in &cell.neighbour_cell_indexes {
             match cells.get(n_index) {
                 Some(neighbour) => {
