@@ -10,7 +10,7 @@ edition = "2018"
 opt-level = 2
 lto = true
 incremental = true
-debug = 2
+#debug = 2
 #debug-assertions = true
 
 [dependencies]

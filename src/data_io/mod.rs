@@ -150,7 +150,6 @@ where P: AsRef<Path>, {
                     }
                     p_i += 1;
                 }
-                //println!("{:?}",point);
                 points.push(point);
             }
         },
@@ -159,11 +158,16 @@ where P: AsRef<Path>, {
     points
 }
 
-pub fn write_to_bmp<const D: usize>(res: &DBSCANResult<D>){
+pub fn write_to_bmp<P, const D: usize>(file_name: P,res: &DBSCANResult<D>)
+where P: AsRef<Path>, {
     if D != 5 {
         println!("Per stampare su bitmap occore avere dati in 5 dimensioni");
         return;
     }
+    let mut gp_file = match File::create(file_name) {
+        Err(why) => panic!("couldn't create {}:", why),
+        Ok(file) => file,
+    };
     let height = res.iter().map(|x| x.iter().map(|x| x[0] as i64).max().unwrap_or(0)).max().unwrap() + 1;
     let width = res.iter().map(|x| x.iter().map(|x| x[1] as i64).max().unwrap_or(0)).max().unwrap() + 1;
     println!("w{} h {}",width, height);
@@ -187,12 +191,7 @@ pub fn write_to_bmp<const D: usize>(res: &DBSCANResult<D>){
     all_points.sort_by(|a,b| a[1].cmp(&b[1]));
     all_points.sort_by(|a,b| a[0].cmp(&b[0]));
     all_points.dedup_by(|a,b| a[0] == b[0] && a[1] == b[1]);
-    let mut gp_file = match File::create("./gp_srcs/out.bmp".to_string()) {
-        Err(why) => panic!("couldn't create {}:", why),
-        Ok(file) => file,
-    };
     gp_file.write_all(&[0x42,0x4D]).unwrap();
-
     //header
     gp_file.write_all(&(tot_size as u32).to_le_bytes()).unwrap();
     gp_file.write_all(&[0;4]).unwrap();
@@ -224,6 +223,11 @@ pub fn write_to_bmp<const D: usize>(res: &DBSCANResult<D>){
     }
 
 }
+
+/*pub fn compare_DBSCAN_results<P, const D: usize>(folder_path: P,res: &DBSCANResult<D>)
+where P: AsRef<Path> {
+
+}*/
 
 
 

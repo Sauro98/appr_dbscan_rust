@@ -1,5 +1,5 @@
 use crate::cluster::{DBSCANResult, find_connected_components, assign_border_noise_points};
-use crate::cell::{find_cells};
+use crate::cell::{find_cells, populate_neighbours};
 use crate::core_cell::{label_points,compute_adjacency_lists};
 use crate::utils::*;
 use std::time::{Instant};
@@ -20,6 +20,9 @@ pub fn approximate_dbscan<const D: usize>(points: Vec<Point<D>>, params: &DBSCAN
     let mut base_cells = find_cells(points, params);
     println!("Found {} cells in {} ms",base_cells.len(),now.elapsed().as_millis());
     let now = Instant::now();
+    populate_neighbours(&mut base_cells);
+    println!("Neighbours computed in {} ms",now.elapsed().as_millis());
+    let now = Instant::now();
     let mut part_vec = label_points(&mut base_cells, params);
     println!("Found {} core cells in {} ms",base_cells.values().filter(|x| x.is_core).count(),now.elapsed().as_millis());
     let now = Instant::now();
@@ -31,6 +34,12 @@ pub fn approximate_dbscan<const D: usize>(points: Vec<Point<D>>, params: &DBSCAN
     let now = Instant::now();
     assign_border_noise_points(&base_cells, &mut result, params);
     println!("Found {} noise points in {} ms",result[0].len(),now.elapsed().as_millis());
+    println!("----------------------CLUSTERS---------------");
+    for i in 1..result.len(){
+        println!("Cluster #{}: {} points;",i,result[i].len());
+    }
+    println!("Cluster Noise: {} points;",result[0].len());
+    println!("---------------------------------------------");
     result
 }
 

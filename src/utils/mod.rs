@@ -139,5 +139,33 @@ pub fn get_base_cell_index<const D: usize>(p: &Point<D>, params: &DBSCANParams) 
     get_cell_index(p, params.epsilon/(params.dimensionality as f64).sqrt())
 }
 
+/*fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
+    let maximum_distance = (D as f64).sqrt().ceil() as i64;
+    let mut new_index = index_c.clone(); 
+    let j_ind = index_c[j];
+    for nval in j_ind - maximum_distance ..= j_ind + maximum_distance {
+        new_index[j] = nval;    
+        if j < index_c.len() - 1{
+            get_neighbours_rec(reference, &new_index, j + 1, neighbours);
+        } else {
+            if index_distance(reference, &new_index) < 4 * D {
+                neighbours.push(new_index.clone());
+            }
+        }
+    }
+}
+
+fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
+    let mut dist : usize = 0;
+    for j in 0..i_1.len() {
+        dist += (i_1[j] - i_2[j]).pow(2) as usize;
+    }
+    dist
+}
+pub fn get_neighbours<const D: usize>(reference: &CellIndex<D>, neighbours: &mut Vec<CellIndex<D>>){
+    let new_index = reference.clone();
+    get_neighbours_rec(reference, &new_index, 0, neighbours);
+}*/
+
 #[cfg(test)]
 mod tests;

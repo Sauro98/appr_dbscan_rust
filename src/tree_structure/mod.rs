@@ -37,14 +37,13 @@ impl <const D: usize> TreeStructure<D> {
     pub fn build_structure(points: Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
         let base_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
         let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
-        if levels_count < 1 {
+        if params.rho >= 1.0 {
             levels_count = 1;
         }
-        
         //In questo programma viene creata una struttura ad albero per ogni cella e quindi si
         //sa gia' che tutti i punti della cella appartengono a root. Si procede dunque subito a dividere 
         //root in 2^d sottocelle.
-        let mut root = TreeStructure::new(&[0;D], -1,base_side_size);
+        let mut root = TreeStructure::new(&get_base_cell_index(&points[0], params),0,base_side_size);
         root.cnt = points.len();
         
         for point in &points {
@@ -66,17 +65,13 @@ impl <const D: usize> TreeStructure<D> {
     }
 
     pub fn approximate_range_counting_root(&self, q: &Point<D>, params: &DBSCANParams) -> usize{
-        let mut ans = 0;
-        for child in self.children.values() {
-            ans += child.approximate_range_counting(q, params);
-        }
-        ans
+        self.approximate_range_counting(q,params)
     }
 
     fn approximate_range_counting(&self, q: &Point<D>, params: &DBSCANParams) -> usize {
         let mut ans : usize = 0;
         let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
-        if levels_count < 1 {
+        if params.rho >= 1.0 {
             levels_count = 1;
         }
         let intersection_type = determine_intersection(q, params, &self.cell_index, self.side_size);
@@ -86,7 +81,7 @@ impl <const D: usize> TreeStructure<D> {
                 ans += self.cnt;
             },
             IntersectionType::Intersecting => {
-                if self.level < levels_count - 1 {
+                if self.level < (levels_count - 1) {
                     for child in self.children.values() {
                         ans += child.approximate_range_counting(q, params);
                     }

@@ -4,7 +4,7 @@ use crate::tree_structure::TreeStructure;
 use partitions::PartitionVec;
 
 
-fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
+pub fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
     let mut cnt : usize = 0;
     for s_point in &cell.points {
         if euclidean_distance(point, &s_point.point) <= epsilon {
@@ -64,6 +64,9 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
                     _ => {}
                 }
             }
+            if tot_pts >= params.min_pts {
+                break;
+            }
         }
         if tot_pts >= params.min_pts {
             s_point.is_core = true;
@@ -81,28 +84,21 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
 }
 
 pub fn compute_adjacency_lists<const D: usize>(cells:  &mut CellTable<D>, params: &DBSCANParams, part_vec: &mut PartitionVec<CellIndex<D>>){
-    for cell in cells.values() {
-        if ! cell.is_core {
-            continue;
-        }
+    for cell in cells.values().filter(|c| c.is_core) {
         for n_index in &cell.neighbour_cell_indexes {
-            match cells.get(n_index) {
-                Some(neighbour) => {
-                    if neighbour.is_core {
-                        if part_vec.same_set(cell.core_info.uf_index, neighbour.core_info.uf_index){
-                            continue;
-                        }
-                        for point in &cell.points {
-                            if point.is_core {
-                                if neighbour.core_info.root.approximate_range_counting_root(&point.point, params) != 0 {
-                                    part_vec.union(cell.core_info.uf_index, neighbour.core_info.uf_index);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                },
-                _ => {}
+            //con l'r-tree faccio il calcolo dei neighbour solo sulle celle effettivamente presenti, quindi quando qui
+            //faccio il get so gia' che mi restituira' Some(neighbour)
+            let neighbour = cells.get(n_index).unwrap();
+            if neighbour.is_core {
+                if part_vec.same_set(cell.core_info.uf_index, neighbour.core_info.uf_index){
+                    continue;
+                }
+                for point in cell.points.iter().filter(|p| p.is_core) {
+                    if neighbour.core_info.root.approximate_range_counting_root(&point.point, params) != 0 {
+                        part_vec.union(cell.core_info.uf_index, neighbour.core_info.uf_index);
+                        break;
+                    }  
+                }
             }
         }
     }

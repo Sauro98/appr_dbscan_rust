@@ -69,13 +69,20 @@ pub fn find_cells<const D: usize>(points: Vec<Point<D>>, params: &DBSCANParams) 
                     .or_insert(Cell::new(&index_arr));
         cell.points.push(StatusPoint::new(curr_point));
     }
+    table
+}
+
+pub fn populate_neighbours<const D: usize>(table: &mut CellTable<D>){
     let rtree = RTree::bulk_load(table.keys().map(|k| CellIndexPoint{index: *k}).collect());
+    let mut cell_counter = 0;
+    let mut neighbour_counter = 0;
     for (key, cell) in table.iter_mut() {
         let neighbours : Vec<CellIndex<D>>= rtree.locate_within_distance(CellIndexPoint{index: key.clone()}, (4 * D) as i64).map(|n| n.index).collect();
+        cell_counter += 1;
+        neighbour_counter +=neighbours.len();
         cell.neighbour_cell_indexes = neighbours;
     }
-
-    table
+    println!("Average number of neighbours: {}",neighbour_counter/cell_counter);
 }
 
 #[cfg(test)]

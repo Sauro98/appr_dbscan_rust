@@ -21,12 +21,12 @@ extern crate partitions;
 extern crate rstar;
 
 const MIN_ARGS_NUM : usize = 5;
-const MAX_ARGS_NUM : usize = 6;
+const MAX_ARGS_NUM : usize = 7;
 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < MIN_ARGS_NUM && args.len() > MAX_ARGS_NUM {
+    if args.len() != MIN_ARGS_NUM && args.len() != MAX_ARGS_NUM {
         println!("Numero di parametri errato");
         print_help();
         return;
@@ -36,46 +36,52 @@ fn main() {
     let rho = parse_float(&args[3], "rho");
     let min_pts = parse_usize(&args[4], "min_pts");
     let print_bitmap = if args.len() == MAX_ARGS_NUM {parse_bool(&args[5])} else {false};
+    let compare_results = if args.len() == MAX_ARGS_NUM {parse_bool(&args[6])} else {false};
     let mut params = params_from_file(file_name); 
     params.epsilon = epsilon;
     params.rho = rho;
     params.min_pts = min_pts;
     println!("Epsilon: {}, Rho: {}, MinPts: {}",epsilon, rho, min_pts);
     println!("Dim: {}, n: {}, Apprx_rdx: {}",params.dimensionality, params.cardinality, params.epsilon*(1_f64 +params.rho));
-    do_dbscan(&params, file_name, print_bitmap);
+    do_dbscan(&params, file_name, print_bitmap, compare_results);
 }
 
-fn do_dbscan(params: &DBSCANParams, file_name: &str, print_bitmap: bool){
+fn do_dbscan(params: &DBSCANParams, file_name: &str, print_bitmap: bool, compare_results: bool){
     match params.dimensionality {
         0 => println!("Errore nella lettura del file di dati"),
-        1 => do_dbscan_d::<1>(params, file_name, print_bitmap),
-        2 => do_dbscan_d::<2>(params, file_name, print_bitmap),
-        3 => do_dbscan_d::<3>(params, file_name, print_bitmap),
-        4 => do_dbscan_d::<4>(params, file_name, print_bitmap),
-        5 => do_dbscan_d::<5>(params, file_name, print_bitmap),
-        6 => do_dbscan_d::<6>(params, file_name, print_bitmap),
-        7 => do_dbscan_d::<7>(params, file_name, print_bitmap),
+        1 => do_dbscan_d::<1>(params, file_name, print_bitmap, compare_results),
+        2 => do_dbscan_d::<2>(params, file_name, print_bitmap, compare_results),
+        3 => do_dbscan_d::<3>(params, file_name, print_bitmap, compare_results),
+        4 => do_dbscan_d::<4>(params, file_name, print_bitmap, compare_results),
+        5 => do_dbscan_d::<5>(params, file_name, print_bitmap, compare_results),
+        6 => do_dbscan_d::<6>(params, file_name, print_bitmap, compare_results),
+        7 => do_dbscan_d::<7>(params, file_name, print_bitmap, compare_results),
         _ => println!("Non sono supportate dimensionalita' oltre la settima")
     }
 }
 
-fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str, print_bitmap: bool) {
+fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str, print_bitmap: bool, _compare_results: bool) {
     let points: Vec<Point<D>> = read_points_from_file(file_name, &params);
     let now = Instant::now();
     let res = approximate_dbscan(points, &params);
     println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
     if print_bitmap {
-        write_to_bmp(&res);
+        write_to_bmp("./gp_srcs/out.bmp",&res);
     }
+    /*if compare_results {
+        compare_DBSCAN_results("./DBSCAN_output/",&res);
+    }*/
 }
 
 fn print_help(){
     println!("Utilizzo:");
-    println!("appr_dbscan_rust data_file epsilon rho min_pts <print_bitmap>");
-    println!("data_file deve essere un file contenente punti stampati uno per riga e con le coordinate separate da uno spazio");
-    println!("epsilon e rho devono essere numeri decimali positivi non nulli");
-    println!("min_pts deve essere un numero intero positivo non nullo");
-    println!("print_bitmap e' opzionale e se presente deve essere un valore booleano. Di default vale \"false\"");
+    println!(" - appr_dbscan_rust data_file epsilon rho min_pts <print_bitmap> <compare_results>");
+    println!(" - data_file deve essere un file contenente punti stampati uno per riga e con le coordinate separate da uno spazio");
+    println!(" - epsilon e rho devono essere numeri decimali positivi non nulli");
+    println!(" - min_pts deve essere un numero intero positivo non nullo");
+    println!(" - print_bitmap e' opzionale e se presente deve essere un valore booleano. Di default vale \"false\"");
+    println!(" - compare_results e' opzionale e se presente deve essere un valore booleano. Di default vale \"false\"");
+    println!("Se uno tra 'print_bitmap' e 'compare_results' deve essere messo a true allora vanno specificati entrambi.");
 }
 
 fn parse_float(arg: &str, name: &str) -> f64 {

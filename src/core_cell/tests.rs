@@ -20,9 +20,10 @@ fn label_points_test() {
     points.push(p3);
     points.push(p4);
     let mut base_table = find_cells(points, &params);
+    populate_neighbours(&mut base_table);
     let mut p_v = label_points(&mut base_table, &params);
     compute_adjacency_lists(&mut base_table, &params, &mut p_v);
-    assert_eq!(base_table.len(), 2);   
+    assert_eq!(base_table.len(), 2);  
     let core_cells_count = base_table.values().filter(|x| x.is_core).count();
     assert_eq!(core_cells_count, 2);
     assert_eq!(p_v.all_sets().count(),1);
@@ -39,6 +40,7 @@ fn label_points_test() {
     points.push(p3);
     points.push(p4);
     let mut base_table = find_cells(points, &params);
+    populate_neighbours(&mut base_table);
     let p_v = label_points(&mut base_table, &params);
     assert_eq!(base_table.len(), 2);   
     assert_eq!(base_table.values().filter(|x| x.is_core).count(), 1);

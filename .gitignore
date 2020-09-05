@@ -1,8 +1,6 @@
 /target
 test_bitmap.txt
 .vs/appr_dbscan_rust/v16/.suo
-.vs/appr_dbscan_rust/v16/.suo
-.vs/appr_dbscan_rust/v16/.suo
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
 .vs/VSWorkspaceState.json
@@ -18,3 +16,9 @@ bitmapreader.cpp
 *.gp
 /imgs
 .vs/slnx.sqlite
+*.py
+/__pycache__
+*.jar
+DBSCAN_OUT.txt
+elki_out.txt
+MiniGUI-saved-settings.txt
