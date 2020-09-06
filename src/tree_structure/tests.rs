@@ -30,14 +30,14 @@ fn counting_test(){
     let l = params.epsilon / (params.dimensionality as f64).sqrt();
     let q = [l,l];
     let q2 = [-l,l];
-    let mut points : Vec<Point<2>> = Vec::with_capacity(2);
-    points.push(q.clone());
-    points.push(q2.clone());
-    let root = TreeStructure::build_structure(points, &params);
+    let root1 = TreeStructure::build_structure(vec![q], &params);
+    let root2 = TreeStructure::build_structure(vec![q2], &params);
     let central = [0.0,0.0];
     let far = [10.0*l, 10.0*l];
-    assert_eq!(root.approximate_range_counting_root(&q, &params),1);
-    assert_eq!(root.approximate_range_counting_root(&q2, &params),1);
-    assert_eq!(root.approximate_range_counting_root(&central, &params),2);
-    assert_eq!(root.approximate_range_counting_root(&far, &params),0);
+    assert_eq!(root1.approximate_range_counting_root(&q, &params),1);
+    assert_eq!(root2.approximate_range_counting_root(&q2, &params),1);
+    assert_eq!(root1.approximate_range_counting_root(&central, &params),1);
+    assert_eq!(root2.approximate_range_counting_root(&central, &params),1);
+    assert_eq!(root1.approximate_range_counting_root(&far, &params),0);
+    assert_eq!(root2.approximate_range_counting_root(&far, &params),0);
 }

@@ -49,7 +49,6 @@ impl <const D: usize> TreeStructure<D> {
         for point in &points {
             let mut curr_side_size = base_side_size;
             let mut prev_child = &mut root;
-            prev_child.cnt += 1;
             //il livello 0 è occupato dalla radice
             for i in 1..levels_count {
                 curr_side_size = curr_side_size / 2.0;
@@ -91,6 +90,23 @@ impl <const D: usize> TreeStructure<D> {
             }
         }
         ans
+    }
+
+    
+
+    fn print_tree_rec(&self) {
+        println!("--- node ---");
+        println!("> Level: {}",self.level);
+        println!("> cell_index: {:?}",self.cell_index);
+        println!("> cnt: {}",self.cnt);
+        for child in self.children.values() {
+            child.print_tree_rec();
+        }
+    }
+
+    pub fn print_tree(&self){
+        println!("----- TREE -----");
+        self.print_tree_rec();
     }
 }
 

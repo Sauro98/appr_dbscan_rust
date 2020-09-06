@@ -14,6 +14,16 @@ pub fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon
     cnt
 }
 
+pub fn core_points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
+    let mut cnt : usize = 0;
+    for s_point in cell.points.iter().filter(|x| x.is_core) {
+        if euclidean_distance(point, &s_point.point) <= epsilon {
+            cnt += 1;
+        }
+    }
+    cnt
+}
+
 fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
     for i in 0..D {
         if i1[i] != i2[i] {
