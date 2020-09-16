@@ -17,7 +17,7 @@ DBSCAN_OUT.txt
 elki_out.txt
 MiniGUI-saved-settings.txt
 OUT_DBSCAN.txt
-compare_clusters.cpp
+*.cpp
 elki_out/
 plot.gp
 d_tests/
