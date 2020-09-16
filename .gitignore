@@ -1,13 +1,7 @@
 /target
 test_bitmap.txt
-.vs/appr_dbscan_rust/v16/.suo
-.vs/slnx.sqlite
-.vs/VSWorkspaceState.json
-.vs/VSWorkspaceState.json
-.vscode/settings.json
-.vs/appr_dbscan_rust/v16/.suo
-.vs/appr_dbscan_rust/v16/Browse.VC.db
-bitmapreader.cpp
+.vs/
+.vscode/
 *.exe
 *.bmp
 /gp_srcs
