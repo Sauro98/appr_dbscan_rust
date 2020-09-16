@@ -7,8 +7,11 @@ mod cluster;
 mod dbscan;
 mod data_io;
 
+extern crate partitions;
+extern crate rstar;
+
 use std::env;
-use std::time::{Instant};
+//use std::time::{Instant};
 use std::process;
 //use std::fs::File;
 //use std::io::{Write};
@@ -17,11 +20,10 @@ use utils::{Point, DBSCANParams};
 use data_io::*;
 use dbscan::approximate_dbscan;
 
-extern crate partitions;
-extern crate rstar;
+
 
 const MIN_ARGS_NUM : usize = 5;
-const MAX_ARGS_NUM : usize = 7;
+const MAX_ARGS_NUM : usize = 6;
 
 
 fn main() {
@@ -36,41 +38,38 @@ fn main() {
     let rho = parse_float(&args[3], "rho");
     let min_pts = parse_usize(&args[4], "min_pts");
     let print_bitmap = if args.len() == MAX_ARGS_NUM {parse_bool(&args[5])} else {false};
-    let compare_results = if args.len() == MAX_ARGS_NUM {parse_bool(&args[6])} else {false};
     let mut params = params_from_file(file_name); 
     params.epsilon = epsilon;
     params.rho = rho;
     params.min_pts = min_pts;
     println!("Epsilon: {}, Rho: {}, MinPts: {}",epsilon, rho, min_pts);
     println!("Dim: {}, n: {}, Apprx_rdx: {}",params.dimensionality, params.cardinality, params.epsilon*(1_f64 +params.rho));
-    do_dbscan(&params, file_name, print_bitmap, compare_results);
+    do_dbscan(&params, file_name, print_bitmap);
 }
 
-fn do_dbscan(params: &DBSCANParams, file_name: &str, print_bitmap: bool, compare_results: bool){
+fn do_dbscan(params: &DBSCANParams, file_name: &String, print_bitmap: bool) {
     match params.dimensionality {
-        0 => println!("Errore nella lettura del file di dati"),
-        1 => do_dbscan_d::<1>(params, file_name, print_bitmap, compare_results),
-        2 => do_dbscan_d::<2>(params, file_name, print_bitmap, compare_results),
-        3 => do_dbscan_d::<3>(params, file_name, print_bitmap, compare_results),
-        4 => do_dbscan_d::<4>(params, file_name, print_bitmap, compare_results),
-        5 => do_dbscan_d::<5>(params, file_name, print_bitmap, compare_results),
-        6 => do_dbscan_d::<6>(params, file_name, print_bitmap, compare_results),
-        7 => do_dbscan_d::<7>(params, file_name, print_bitmap, compare_results),
-        _ => println!("Non sono supportate dimensionalita' oltre la settima")
-    }
+        0 => {println!("Errore nella lettura del file di dati");},
+        1 => do_dbscan_d::<1>(params, file_name, print_bitmap),
+        2 => do_dbscan_d::<2>(params, file_name, print_bitmap),
+        3 => do_dbscan_d::<3>(params, file_name, print_bitmap),
+        4 => do_dbscan_d::<4>(params, file_name, print_bitmap),
+        5 => do_dbscan_d::<5>(params, file_name, print_bitmap),
+        6 => do_dbscan_d::<6>(params, file_name, print_bitmap),
+        7 => do_dbscan_d::<7>(params, file_name, print_bitmap),
+        _ => {println!("Non sono supportate dimensionalita' oltre la settima")}
+    };
 }
 
-fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &str, print_bitmap: bool, _compare_results: bool) {
+fn do_dbscan_d<const D: usize>(params: &DBSCANParams, file_name: &String, print_bitmap: bool){
     let points: Vec<Point<D>> = read_points_from_file(file_name, &params);
-    let now = Instant::now();
+    //let now = Instant::now();
     let res = approximate_dbscan(points, &params);
-    println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
+    println!("Found {} clusters and {} noise points", res.len() -1 ,res[0].len());
+    //println!("Completed DBSCAN in {} milliseconds", now.elapsed().as_millis());
     if print_bitmap {
-        write_to_bmp("./gp_srcs/out.bmp",&res);
+        write_to_bmp(&"./gp_srcs/out.bmp",&res);
     }
-    /*if compare_results {
-        compare_DBSCAN_results("./DBSCAN_output/",&res);
-    }*/
 }
 
 fn print_help(){
@@ -87,7 +86,7 @@ fn print_help(){
 fn parse_float(arg: &str, name: &str) -> f64 {
     let float : f64 = arg.parse().unwrap_or(0.0);
     if float <= 0.0 {
-        println!("Il valore inserito per {:?} non e' valido", name);
+        println!("Il valore inserito per {:?} non e' valido : {}", name, arg);
         process::exit(1);
     }
     float

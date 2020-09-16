@@ -139,10 +139,6 @@ int main(int argc, char** argv){
             std::cout<<"!!!!Failure in reading file(badbit)!!!!"<<std::endl;
             break;
         }
-        /*if(ifs.fail()){
-            std::cout<<"!!!!Failure in reading file(failbit)!!!!"<<std::endl;
-            break;
-        }*/
     }
     delete[] buffer;
     std::cout<<"Read "<<bytes_count<<" bytes"<<std::endl;

@@ -36,10 +36,12 @@ impl <const D: usize> TreeStructure<D> {
 
     pub fn build_structure(points: Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
         let base_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
-        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
-        if params.rho >= 1.0 {
-            levels_count = 1;
-        }
+        let levels_count_f = 1.0 + (1.0/params.rho).log(2.0).ceil();
+        let levels_count = if levels_count_f < 1.0 {
+            1
+        } else {
+            levels_count_f as i32
+        };
         //In questo programma viene creata una struttura ad albero per ogni cella e quindi si
         //sa gia' che tutti i punti della cella appartengono a root. Si procede dunque subito a dividere 
         //root in 2^d sottocelle.
@@ -50,7 +52,7 @@ impl <const D: usize> TreeStructure<D> {
             let mut curr_side_size = base_side_size;
             let mut prev_child = &mut root;
             //il livello 0 è occupato dalla radice
-            for i in 1..levels_count {
+            for i in 1..=levels_count {
                 curr_side_size = curr_side_size / 2.0;
                 let index_arr = get_cell_index(point, curr_side_size);
                 let curr_child : &mut TreeStructure<D> =
@@ -69,10 +71,12 @@ impl <const D: usize> TreeStructure<D> {
 
     fn approximate_range_counting(&self, q: &Point<D>, params: &DBSCANParams) -> usize {
         let mut ans : usize = 0;
-        let mut levels_count: i32 = 1 + (1.0/params.rho).log(2.0).ceil() as i32;
-        if params.rho >= 1.0 {
-            levels_count = 1;
-        }
+        let levels_count_f = 1.0 + (1.0/params.rho).log(2.0).ceil();
+        let levels_count = if levels_count_f < 1.0 {
+            1
+        } else {
+            levels_count_f as i32
+        };
         let intersection_type = determine_intersection(q, params, &self.cell_index, self.side_size);
         match intersection_type {
             IntersectionType::Disjoint => {},
@@ -83,6 +87,9 @@ impl <const D: usize> TreeStructure<D> {
                 if self.level < (levels_count - 1) {
                     for child in self.children.values() {
                         ans += child.approximate_range_counting(q, params);
+                        /*if ans > 0 {
+                            return ans;
+                        }*/
                     }
                 } else {
                     ans += self.cnt;
@@ -94,7 +101,7 @@ impl <const D: usize> TreeStructure<D> {
 
     
 
-    fn print_tree_rec(&self) {
+    /*fn print_tree_rec(&self) {
         println!("--- node ---");
         println!("> Level: {}",self.level);
         println!("> cell_index: {:?}",self.cell_index);
@@ -107,7 +114,7 @@ impl <const D: usize> TreeStructure<D> {
     pub fn print_tree(&self){
         println!("----- TREE -----");
         self.print_tree_rec();
-    }
+    }*/
 }
 
 

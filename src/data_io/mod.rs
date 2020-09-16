@@ -83,7 +83,7 @@ const COLORS_COUNT: u32 = 0;
 const IMPORTANT_COLORS: u32 = 0;
 
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+fn read_lines<P>(filename: &P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
     let file_res = File::open(filename);
     match file_res {
@@ -97,7 +97,7 @@ where P: AsRef<Path>, {
     }
 }
 
-pub fn params_from_file<P>(file_name: P) -> DBSCANParams 
+pub fn params_from_file<P>(file_name: &P) -> DBSCANParams 
 where P: AsRef<Path>, {
     let mut dim = 0;
     let mut card = 0;
@@ -127,7 +127,7 @@ where P: AsRef<Path>, {
     }
 }
 
-pub fn read_points_from_file<P,const D: usize>(file_name: P, params: &DBSCANParams) -> Vec<Point<D>>
+pub fn read_points_from_file<P,const D: usize>(file_name: &P, params: &DBSCANParams) -> Vec<Point<D>>
 where P: AsRef<Path>, {
     let mut points :  Vec<Point<D>> = Vec::with_capacity(params.cardinality);
     match read_lines(file_name) {
@@ -158,7 +158,7 @@ where P: AsRef<Path>, {
     points
 }
 
-pub fn write_to_bmp<P, const D: usize>(file_name: P,res: &DBSCANResult<D>)
+pub fn write_to_bmp<P, const D: usize>(file_name: &P,res: &DBSCANResult<D>)
 where P: AsRef<Path>, {
     if D != 5 {
         println!("Per stampare su bitmap occore avere dati in 5 dimensioni");

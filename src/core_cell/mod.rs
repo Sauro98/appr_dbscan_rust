@@ -14,7 +14,7 @@ pub fn points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon
     cnt
 }
 
-pub fn core_points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
+/*pub fn core_points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, epsilon: f64) -> usize{
     let mut cnt : usize = 0;
     for s_point in cell.points.iter().filter(|x| x.is_core) {
         if euclidean_distance(point, &s_point.point) <= epsilon {
@@ -22,7 +22,7 @@ pub fn core_points_in_range<const D: usize>(point: &Point<D>, cell: &Cell<D>, ep
         }
     }
     cnt
-}
+}*/
 
 fn is_same_index<const D: usize>(i1: &CellIndex<D>, i2: &CellIndex<D>) -> bool {
     for i in 0..D {
@@ -67,12 +67,10 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
         let mut tot_pts = len;
         for n_index in &curr_cell.neighbour_cell_indexes {
             if !is_same_index(&curr_cell.index, n_index) {
-                match cells_c.get(n_index) {
-                    Some(n_cell) => {
-                        tot_pts += points_in_range(&s_point.point, n_cell, params.epsilon) 
-                    },
-                    _ => {}
-                }
+                //con l'r-tree faccio il calcolo dei neighbour solo sulle celle effettivamente presenti, quindi quando qui
+                //faccio il get so gia' che mi restituira' Some(neighbour)
+                let neighbour = cells_c.get(n_index).unwrap();
+                tot_pts += points_in_range(&s_point.point, neighbour, params.epsilon);
             }
             if tot_pts >= params.min_pts {
                 break;
@@ -80,15 +78,13 @@ fn label_sparse_cell<const D: usize>(cells_c: &CellTable<D>,curr_cell: &mut Cell
         }
         if tot_pts >= params.min_pts {
             s_point.is_core = true;
-            if !curr_cell.is_core {
-                curr_cell.is_core = true;
-                curr_cell.core_info.uf_index = uf_str.len();
-                uf_str.push(curr_cell.index.clone());
-            }
+            curr_cell.is_core = true;
             points.push(s_point.point.clone());
         }
     }
     if curr_cell.is_core {
+        curr_cell.core_info.uf_index = uf_str.len();
+        uf_str.push(curr_cell.index.clone());      
         curr_cell.core_info.root = TreeStructure::build_structure(points, params);
     }
 }
@@ -110,6 +106,7 @@ pub fn compute_adjacency_lists<const D: usize>(cells:  &mut CellTable<D>, params
                     }  
                 }
             }
+            
         }
     }
 }

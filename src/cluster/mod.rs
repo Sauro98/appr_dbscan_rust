@@ -1,5 +1,5 @@
 use crate::cell::{CellTable};
-use crate::core_cell::core_points_in_range;
+//use crate::core_cell::core_points_in_range;
 use crate::utils::*;
 use partitions::PartitionVec;
 
@@ -48,14 +48,14 @@ fn assign_border_noise_point<const D: usize>(point: &Point<D>,neighbours: &Vec<C
             Some(curr_cell) => {
                 if curr_cell.is_core{
                     if !clusters_in.contains(&curr_cell.core_info.i_cluster) {
-                        /*if curr_cell.core_info.root.approximate_range_counting_root(&point,params) != 0 {    
-                            clusters[curr_cell.core_info.i_cluster].push(point.clone());
-                            clusters_in.push(curr_cell.core_info.i_cluster);
-                        }*/
-                        if core_points_in_range(&point, curr_cell, params.epsilon) > 0 {
+                        if curr_cell.core_info.root.approximate_range_counting_root(&point,params) != 0 {    
                             clusters[curr_cell.core_info.i_cluster].push(point.clone());
                             clusters_in.push(curr_cell.core_info.i_cluster);
                         }
+                        /*if core_points_in_range(&point, curr_cell, params.epsilon) > 0 {
+                            clusters[curr_cell.core_info.i_cluster].push(point.clone());
+                            clusters_in.push(curr_cell.core_info.i_cluster);
+                        }*/
                     }
                 }
             },

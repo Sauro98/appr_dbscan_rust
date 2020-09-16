@@ -81,14 +81,11 @@ pub fn determine_intersection<const D: usize>(q: &Point<D>, params: &DBSCANParam
         let dist = euclidean_distance(q, &corner);
         if dist <= appr_dist {
             appr_in_count += 1;
-        } else if dist >= params.epsilon {
+        }
+        if dist >= params.epsilon {
             out_count += 1;
         }
-        /*if appr_in_count != 0 && out_count != 0 {
-            return IntersectionType::Intersecting;
-        }*/
     }
-
     if appr_in_count == n_corners{
         return IntersectionType::FullyCovered
     } else if out_count == n_corners{
@@ -114,7 +111,6 @@ fn get_corners<const D: usize>(cell_center: &CellCenter<D>, side_size: f64) -> V
                 new_corner[bit_i] += dist;
             }
         }
-        //println!("{:?}",new_corner);
         corners.push(new_corner);
     }
     corners
@@ -138,8 +134,8 @@ pub fn get_cell_index<const D: usize>(p: &Point<D>, side_size: f64) -> CellIndex
 pub fn get_base_cell_index<const D: usize>(p: &Point<D>, params: &DBSCANParams) ->CellIndex<D>{
     get_cell_index(p, params.epsilon/(params.dimensionality as f64).sqrt())
 }
-
-/*fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
+/*
+fn get_neighbours_rec<const D: usize>(reference: &CellIndex<D>, index_c: &CellIndex<D>, j: usize, neighbours: &mut Vec<CellIndex<D>>){
     let maximum_distance = (D as f64).sqrt().ceil() as i64;
     let mut new_index = index_c.clone(); 
     let j_ind = index_c[j];
@@ -153,15 +149,16 @@ pub fn get_base_cell_index<const D: usize>(p: &Point<D>, params: &DBSCANParams) 
             }
         }
     }
-}
+}*/
 
-fn index_distance<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
+pub fn index_distance_sq<const D: usize>(i_1 : &CellIndex<D>, i_2: &CellIndex<D>) -> usize {
     let mut dist : usize = 0;
     for j in 0..i_1.len() {
         dist += (i_1[j] - i_2[j]).pow(2) as usize;
     }
     dist
 }
+/*
 pub fn get_neighbours<const D: usize>(reference: &CellIndex<D>, neighbours: &mut Vec<CellIndex<D>>){
     let new_index = reference.clone();
     get_neighbours_rec(reference, &new_index, 0, neighbours);

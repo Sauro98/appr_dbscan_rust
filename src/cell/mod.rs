@@ -1,7 +1,16 @@
 use crate::utils::*;
 use std::collections::HashMap;
-use rstar::RTree;
+use rstar::{RTree, RTreeParams, RStarInsertionStrategy};
 use crate::tree_structure::TreeStructure;
+
+struct LargeNodeParameters<const D:usize>;
+impl <const D:usize> RTreeParams for LargeNodeParameters<D> {
+    const MAX_SIZE: usize = 4 * D;
+    const MIN_SIZE: usize = Self::MAX_SIZE/2;
+    const REINSERTION_COUNT: usize = (Self::MAX_SIZE-Self::MIN_SIZE)/2;
+    type DefaultInsertionStrategy = RStarInsertionStrategy;
+
+}
 
 #[derive(Clone)]
 pub struct StatusPoint<const D: usize> {
@@ -73,16 +82,26 @@ pub fn find_cells<const D: usize>(points: Vec<Point<D>>, params: &DBSCANParams) 
 }
 
 pub fn populate_neighbours<const D: usize>(table: &mut CellTable<D>){
-    let rtree = RTree::bulk_load(table.keys().map(|k| CellIndexPoint{index: *k}).collect());
-    let mut cell_counter = 0;
+    let rtree: RTree<CellIndexPoint<D>, LargeNodeParameters<D>> = RTree::bulk_load_with_params(table.keys().map(|k| CellIndexPoint{index: *k}).collect());
+    //let rtree = RTree::bulk_load(table.keys().map(|k| CellIndexPoint{index: *k}).collect());
+    /*let mut cell_counter = 0;
     let mut neighbour_counter = 0;
+    let mut points_counter = 0;*/
     for (key, cell) in table.iter_mut() {
-        let neighbours : Vec<CellIndex<D>>= rtree.locate_within_distance(CellIndexPoint{index: key.clone()}, (4 * D) as i64).map(|n| n.index).collect();
-        cell_counter += 1;
+        //devo filtrare perche' li voglio minori e non minori_uguali
+        let neighbours : Vec<CellIndex<D>>= rtree.locate_within_distance(CellIndexPoint{index: key.clone()}, (4 * D) as i64).filter(
+            |x| index_distance_sq(&x.index, key) < 4*D
+        ).map(|x| x.index).collect();
+        /*cell_counter += 1;
         neighbour_counter +=neighbours.len();
+        points_counter += cell.points.len();*/
         cell.neighbour_cell_indexes = neighbours;
     }
-    println!("Average number of neighbours: {}",neighbour_counter/cell_counter);
+    //println!("Average number of neighbours: {}",neighbour_counter/cell_counter);
+    //println!("Average number of points per cell: {}",points_counter/cell_counter);
+    /*for (key, cell) in table.iter_mut() {
+        get_neighbours(&cell.index, &mut cell.neighbour_cell_indexes);
+    }*/
 }
 
 #[cfg(test)]
