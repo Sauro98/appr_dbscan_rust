@@ -51,7 +51,11 @@ use std::path::{Path};
 /// 
 /// # Example
 /// ``` rust
-/// let res : DBSCANResult<2> = do_appr_dbscan("./out_test_1.txt", 0.3, 0.1, 10);
+/// extern crate appr_dbscan;
+/// use appr_dbscan::do_appr_dbscan_d;
+/// use appr_dbscan::cluster::DBSCANResult;
+/// 
+/// let res : DBSCANResult<2> = do_appr_dbscan_d("./datasets/out_test_1.txt", 0.3, 0.1, 10);
 /// let clusters_count = res.len() - 1;
 /// let noise_points_count = res[0].len();
 /// ```
