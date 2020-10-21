@@ -2,8 +2,7 @@ use std::fs::File;
 use std::io::{Write};
 use std::io::{self, BufRead};
 use std::path::{Path};
-use crate::utils::{DBSCANParams, Point};
-use crate::cluster::DBSCANResult;
+use crate::utils::{DBSCANParams, Point, DBSCANResult, VectorDBSCANResult, array_res_to_vector_res};
 
 const PALETTE_ARR : [[u8; 3];64] = [
     [0, 0, 0],
@@ -97,6 +96,15 @@ where P: AsRef<Path>, {
     }
 }
 
+/// Reads the number of points and their dimensionality contained in a data file.
+/// Points must be one for each row and their coordinates must be separated by whitespace.
+/// 
+/// ## Example:
+/// ```text
+/// 0.0 0.1 1.0
+/// 1.0 2.0 1.5
+/// ...
+/// ```
 pub fn params_from_file<P>(file_name: &P) -> DBSCANParams 
 where P: AsRef<Path>, {
     let mut dim = 0;
@@ -127,6 +135,8 @@ where P: AsRef<Path>, {
     }
 }
 
+/// Reads `params.cardinality` points from a data file assuming that all of them have `D` components, panicking otherwise.
+/// The rsult is stored as a vector of arrays of fixed length `D`.
 pub fn read_points_from_file<P,const D: usize>(file_name: &P, params: &DBSCANParams) -> Vec<Point<D>>
 where P: AsRef<Path>, {
     let mut points :  Vec<Point<D>> = Vec::with_capacity(params.cardinality);
@@ -142,6 +152,9 @@ where P: AsRef<Path>, {
                 for val in line.split_whitespace() {
                     match val.parse() {
                         Ok(converted) => {
+                            if p_i >= D {
+                                panic!("This point does not have {} components: {}",D,line);
+                            }
                             point[p_i] = converted;
                         },
                         Err(e) => {
@@ -155,13 +168,34 @@ where P: AsRef<Path>, {
         },
         Err(_e) => {}
     }
+    if points.len() != params.cardinality {
+        panic!("Expected {} points in input file but {} were found", params.cardinality, points.len());
+    }
     points
 }
 
+/// Same as `write_to_bmp_vec` but takes in input a DBSCANResult where each point is a fixed length array.
 pub fn write_to_bmp<P, const D: usize>(file_name: &P,res: &DBSCANResult<D>)
 where P: AsRef<Path>, {
-    if D != 5 {
-        println!("Per stampare su bitmap occore avere dati in 5 dimensioni");
+    write_to_bmp_vec(file_name, &array_res_to_vector_res(res.clone()), D);
+}
+
+
+/// Writes the clusterized result to a bmp image using high contrast colors for the different clusters. 
+/// This assumes that the clusterized data comes from a 24 bit BMP image and writes `file_name` as a 24 bit BMP image.
+/// The clusterized points must have 5 coordinates and they must be in this order to have a valid result:
+/// row column B G R
+/// 
+/// # Parameters
+/// * `file_name`: the path to the file where the bmp will be written;
+/// * res: the result of the approximate DBSCAN algorithm where each point is represented as a vector. If this is not your
+///   type of result check `write_to_bmp`;
+/// * dimensionality: the number of components of the points in res.
+///
+pub fn write_to_bmp_vec<P>(file_name: &P,res: &VectorDBSCANResult, dimensionality: usize)
+where P: AsRef<Path>, {
+    if dimensionality != 5 {
+        println!("Points are required to have 5 dimensionalities to be printed to bmp");
         return;
     }
     let mut gp_file = match File::create(file_name) {
@@ -179,18 +213,23 @@ where P: AsRef<Path>, {
         println!("warning: BMP needs padding");
         tot_size += padding  * height as u32 * 3;
     }
+
+    // first insert into all_points all noise points adding an additional coordinate to represent their cluster number (0)
     let mut all_points : Vec<Vec<i64>>= {
-        res[0].iter().map(|x| {let mut y : Vec<i64> = x.to_vec().iter().map(|x| *x as i64).collect(); y.push(0); y}).collect()
+        res[0].iter().map(|x| {let mut y : Vec<i64> = x.iter().map(|x| *x as i64).collect(); y.push(0); y}).collect()
     };
+    // then append all the points from the oher clusters, adding a coordinate to represent their cluster number
     for i in 1..res.len() {
         all_points.append(&mut ({
-                res[i].iter().map(|x| {let mut y: Vec<i64> = x.to_vec().iter().map(|x| *x as i64).collect(); y.push(i as i64); y}).collect()
+                res[i].iter().map(|x| {let mut y: Vec<i64> = x.iter().map(|x| *x as i64).collect(); y.push(i as i64); y}).collect()
             }
         ));
     } 
     all_points.sort_by(|a,b| a[1].cmp(&b[1]));
     all_points.sort_by(|a,b| a[0].cmp(&b[0]));
     all_points.dedup_by(|a,b| a[0] == b[0] && a[1] == b[1]);
+
+    //bitmap header
     gp_file.write_all(&[0x42,0x4D]).unwrap();
     //header
     gp_file.write_all(&(tot_size as u32).to_le_bytes()).unwrap();
@@ -211,7 +250,8 @@ where P: AsRef<Path>, {
 
     let mut col_counter = 0;
     for point in all_points {
-        let color = PALETTE_ARR[(point[D] as usize % PALETTE_ARR.len()) as usize];
+        // coordinate at index dimensionality is the cluster index
+        let color = PALETTE_ARR[(point[dimensionality] as usize % PALETTE_ARR.len()) as usize];
         gp_file.write_all(&[color[2], color[1], color[0]]).unwrap();
         col_counter += 1;
         if col_counter == width {
@@ -223,12 +263,6 @@ where P: AsRef<Path>, {
     }
 
 }
-
-/*pub fn compare_DBSCAN_results<P, const D: usize>(folder_path: P,res: &DBSCANResult<D>)
-where P: AsRef<Path> {
-
-}*/
-
 
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::cluster::{DBSCANResult, find_connected_components, assign_border_noise_points};
+use crate::cluster::{find_connected_components, assign_border_noise_points};
 use crate::cell::{find_cells, populate_neighbours};
 use crate::core_cell::{label_points,compute_adjacency_lists};
 use crate::utils::*;

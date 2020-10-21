@@ -3,11 +3,14 @@ use crate::cell::{CellTable};
 use crate::utils::*;
 use partitions::PartitionVec;
 
-pub type Cluster <const D: usize> = Vec<Point<D>>;
-pub type DBSCANResult <const D: usize> = Vec<Cluster<D>>;
-
+/// The result of the approximate DBSCAN algorithm always has an element at this index
+/// that corresponds to the set of noise points found
 pub const NOISE_CLUSTER_INDEX:usize = 0;
 
+/// Explores the union-find structure `part_vec` and puts all core points in the same set in the same clusters and core points from 
+/// different sets in different clusters. This function supposes that all possible union operations on `part_vec` were already done.
+/// The result of this function is a collection of cluster constructed as described above, and its first element is the (now still empty)
+/// set of noise points
 pub fn find_connected_components<const D: usize>(cells: &mut CellTable<D>, part_vec: PartitionVec<CellIndex<D>>) -> DBSCANResult<D>{
     let mut res : DBSCANResult<D> = Vec::new();
     let noise_cluster : Cluster<D> = Vec::new();
@@ -31,6 +34,8 @@ pub fn find_connected_components<const D: usize>(cells: &mut CellTable<D>, part_
     res
 }
 
+/// Loops through all non core points of the dataset and puts them in the cluster\clusters they belong to. If no such cluster is found then
+/// the point is added to the noise points set.
 pub fn assign_border_noise_points<const D: usize>(cells: &CellTable<D>, clusters: &mut DBSCANResult<D>, params: &DBSCANParams) {
     for cell in cells.values() {
         for s_point in &cell.points {
@@ -41,6 +46,7 @@ pub fn assign_border_noise_points<const D: usize>(cells: &CellTable<D>, clusters
     }
 }
 
+/// Evaluates if a single point belongs to one or more clusters or if it is a noise points and adds the point to the cluster/s or set where it belongs.
 fn assign_border_noise_point<const D: usize>(point: &Point<D>,neighbours: &Vec<CellIndex<D>>, clusters: &mut DBSCANResult<D>, cells: &CellTable<D>, params: &DBSCANParams) {
     let mut clusters_in : Vec<usize> = Vec::new();
     for n_index in neighbours {

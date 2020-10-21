@@ -2,11 +2,18 @@ use std::collections::HashMap;
 use crate::utils::*;
 
 #[derive(Clone)]
+/// Tree structure that divides the space in nested cells to perform approximate range counting
+/// Each member of this structure is a node in the tree
 pub struct TreeStructure<const D: usize>{
+    /// The index of the cell represented by this node
     cell_index: CellIndex<D>,
-    level: i32,
-    cnt: usize,
+    /// The size of the cell 
     side_size: f64,
+    /// The depth inside the tree where this node lays
+    level: i32,
+    /// The number of points cointained in the cell
+    cnt: usize,
+    /// The collection of nested sub-cells (bounded by 2^D at max, with D constant)
     children: HashMap<CellIndex<D>, TreeStructure<D>>,
 }
 
@@ -34,6 +41,9 @@ impl <const D: usize> TreeStructure<D> {
         }
     }
 
+    /// Generates a tree starting from the points given in input. To function correctly the points in input
+    /// must be all and only the core points in a given cell of the approximated DBSCAN algorithm with side size
+    /// equal to `epsilon/sqrt(D)`. This is assumed true during the construction.
     pub fn build_structure(points: Vec<Point<D>>, params: &DBSCANParams) -> TreeStructure<D> {
         let base_side_size = params.epsilon/(params.dimensionality as  f64 ).sqrt();
         let levels_count_f = 1.0 + (1.0/params.rho).log(2.0).ceil();
@@ -42,9 +52,9 @@ impl <const D: usize> TreeStructure<D> {
         } else {
             levels_count_f as i32
         };
-        //In questo programma viene creata una struttura ad albero per ogni cella e quindi si
-        //sa gia' che tutti i punti della cella appartengono a root. Si procede dunque subito a dividere 
-        //root in 2^d sottocelle.
+        // The approximated DBSCAN algorithm needs one instance of this structure for every core cell. 
+        // This gives that all the points in input are contained in the cell of side size `epsilon/sqrt(D)`. 
+        // All the points can then be added to the root and we proceed directly to divide the core cell in its sub-cells
         let mut root = TreeStructure::new(&get_base_cell_index(&points[0], params),0,base_side_size);
         root.cnt = points.len();
         
@@ -65,6 +75,12 @@ impl <const D: usize> TreeStructure<D> {
         root
     }
 
+    /// Performs the approximated range counting on the tree given the point in input. It stops as soon as the counting
+    /// is non zero, so the result is not actually the exact count but rather 0 if there is no point in the tree
+    /// in the vicinity of `q`, and a value that is less or equal to the number of points in the vicinity of `q` otherwise.
+    /// The points in the vicinity are found for certain if they are at a distance less than equal to `epsilon` from `q` and 
+    /// are excluded for certain if their distance from `q` is greater than `epsilon(1 + rho)`. All the points in between are 
+    /// counted in an arbitrary way, depending on what is more efficient. 
     pub fn approximate_range_counting_root(&self, q: &Point<D>, params: &DBSCANParams) -> usize{
         self.approximate_range_counting(q,params)
     }
