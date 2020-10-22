@@ -8,6 +8,7 @@ repository = "https://github.com/Sauro98/appr_dbscan_rust"
 homepage = "https://github.com/Sauro98/appr_dbscan_rust"
 keywords = ["DBSCAN", "dbscan", "clustering", "approximated"]
 description = "Rust implementation of the approximated DBSCAN algorithm introduced by Gan and Tao"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
