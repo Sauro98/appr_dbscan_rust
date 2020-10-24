@@ -9,11 +9,14 @@ pub mod data_io;
 
 extern crate partitions;
 extern crate rstar;
+extern crate ndarray;
 
 use utils::*;
 use data_io::{params_from_file, read_points_from_file};
 use dbscan::approximate_dbscan;
+use ndarray::{Array1};
 use std::path::{Path};
+
 
 /// Function that returns the result of the approximate DBSCAN algorithm 
 /// executed on the set of points contained in `filename` with the given values of epsilon and rho.
@@ -46,7 +49,7 @@ use std::path::{Path};
 /// let noise_points_count = res[0].len();
 /// ```
 /// 
-pub fn do_appr_dbscan_file<P, const D: usize>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult<D> 
+pub fn do_appr_dbscan_file<P, const D: usize>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult 
 where P: AsRef<Path>{
     let mut params = params_from_file(&filename);
     if params.dimensionality != D as u32 {
@@ -56,7 +59,7 @@ where P: AsRef<Path>{
     params.rho = rho;
     params.min_pts = min_pts;
     let points : Vec<Point<D>> = read_points_from_file(&filename, &params);
-    let res = approximate_dbscan(points, &params);
+    let res = approximate_dbscan(&points, &params);
     res
 }
 
@@ -87,12 +90,12 @@ where P: AsRef<Path>{
 /// use appr_dbscan::utils::DBSCANResult;
 /// 
 /// let points = vec![[0.0,0.0],[1.0,1.0],[0.0,1.0],[1.0,0.0],[2.0,1.0],[0.0,2.0],[2.0,1.0],[1.0,1.0]];
-/// let res : DBSCANResult<2> = do_appr_dbscan_points(points, 0.3, 0.1, 10);
+/// let res : DBSCANResult<2> = do_appr_dbscan_points(&points, 0.3, 0.1, 10);
 /// let clusters_count = res.len() - 1;
 /// let noise_points_count = res[0].len();
 /// ```
 /// 
-pub fn do_appr_dbscan_points<const D: usize>(points: Vec<Point<D>>, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult<D> {
+pub fn do_appr_dbscan_points<const D: usize>(points: &Vec<Point<D>>, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult {
     let params = DBSCANParams{
         dimensionality: D as u32,
         cardinality: points.len(),
@@ -100,7 +103,7 @@ pub fn do_appr_dbscan_points<const D: usize>(points: Vec<Point<D>>, epsilon: f64
         rho: rho,
         min_pts: min_pts
     };
-    let res = approximate_dbscan(points, &params);
+    let res = approximate_dbscan(&points, &params);
     res
 }
 
@@ -131,18 +134,18 @@ pub fn do_appr_dbscan_points<const D: usize>(points: Vec<Point<D>>, epsilon: f64
 /// let noise_points_count = res[0].len();
 /// ```
 /// 
-pub fn do_appr_dbscan_auto_dimensionality_file<P>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> (VectorDBSCANResult, usize)
+pub fn do_appr_dbscan_auto_dimensionality_file<P>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> (DBSCANResult, usize)
 where P: AsRef<Path>{
     let params = params_from_file(&filename);
     match params.dimensionality {
         0 => {panic!("There has been an error while reading the data: 0 dimensionality point found");},
-        1 => (array_res_to_vector_res::<1>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        2 => (array_res_to_vector_res::<2>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        3 => (array_res_to_vector_res::<3>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        4 => (array_res_to_vector_res::<4>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        5 => (array_res_to_vector_res::<5>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        6 => (array_res_to_vector_res::<6>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
-        7 => (array_res_to_vector_res::<7>(do_appr_dbscan_file(filename, epsilon, rho, min_pts)),params.dimensionality as usize),
+        1 => (do_appr_dbscan_file::<P,1>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        2 => (do_appr_dbscan_file::<P,2>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        3 => (do_appr_dbscan_file::<P,3>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        4 => (do_appr_dbscan_file::<P,4>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        5 => (do_appr_dbscan_file::<P,5>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        6 => (do_appr_dbscan_file::<P,6>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
+        7 => (do_appr_dbscan_file::<P,7>(filename, epsilon, rho, min_pts),params.dimensionality as usize),
         _ => {panic!("Dimensionalities over 7 are not supported")}
     }
 }
@@ -169,45 +172,45 @@ where P: AsRef<Path>{
 /// use appr_dbscan::do_appr_dbscan_auto_dimensionality_points;
 /// 
 /// let points = vec![vec![0.0,0.0],vec![1.0,1.0],vec![0.0,1.0],vec![1.0,0.0],vec![2.0,1.0],vec![0.0,2.0],vec![2.0,1.0],vec![1.0,1.0]];
-/// let (res, dimensionality) = do_appr_dbscan_auto_dimensionality_points(points, 0.3, 0.1, 10);
+/// let (res, dimensionality) = do_appr_dbscan_auto_dimensionality_points(&points, 0.3, 0.1, 10);
 /// let clusters_count = res.len() - 1;
 /// let noise_points_count = res[0].len();
 /// ```
 /// 
-pub fn do_appr_dbscan_auto_dimensionality_points(points: Vec<VectorPoint>, epsilon: f64, rho: f64, min_pts: usize) -> (VectorDBSCANResult, usize) {
+pub fn do_appr_dbscan_auto_dimensionality_points(points: &Vec<VectorPoint>, epsilon: f64, rho: f64, min_pts: usize) -> (DBSCANResult, usize) {
     if points.len() == 0 {
-        return (Vec::new(),0);
+        return (Array1::from_elem(0,None),0);
     }
     let dimensionality = points[0].len();
     match dimensionality {
         0 => {panic!("There has been an error while reading the data: 0 dimensionality point found");},
         1 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<1>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<1>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         2 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<2>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<2>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         3 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<3>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<3>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         4 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<4>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<4>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         5 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<5>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<5>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         6 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<6>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<6>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         7 => {
-            let arr_points = vector_input_to_array_input(points);
-            (array_res_to_vector_res::<7>(do_appr_dbscan_points(arr_points, epsilon, rho, min_pts)), dimensionality)
+            let arr_points = &vector_input_to_array_input::<7>(points);
+            (do_appr_dbscan_points(arr_points, epsilon, rho, min_pts), dimensionality)
         },
         _ => {panic!("Dimensionalities over 7 are not supported")}
     }

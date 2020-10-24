@@ -15,6 +15,6 @@ fn find_cells_test(){
     let mut points = Vec::with_capacity(2);
     points.push(q.clone());
     points.push(q2.clone());
-    let base_table = find_cells(points, &params);
+    let base_table = find_cells(&points, &params);
     assert_eq!(base_table.len(), 2);   
 }

@@ -1,4 +1,5 @@
 use rstar::{Point as RPoint};
+use ndarray::{Array1};
 
 #[derive(Clone,Copy,PartialEq,Debug)]
 /// Mock struct to use RTrees with const generics
@@ -168,7 +169,8 @@ pub type Point<const D: usize> = [f64;D];
 pub type Cluster <const D: usize> = Vec<Point<D>>;
 /// Collection of all the cluster found by the DBSCAN algorithm. Its first element
 /// will be the collection of noise points.
-pub type DBSCANResult <const D: usize> = Vec<Cluster<D>>;
+pub type DBSCANResult = Array1<Option<usize>>;
+//pub type DBSCANResult <const D: usize> = Vec<Cluster<D>>;
 
 /// Point defined as a vector instead of as an array like in `utils::Point`.
 /// Used for when dimensionality is not previously known.
@@ -183,7 +185,7 @@ pub type VectorDBSCANResult = Vec<VectorCluster>;
 
 /// Translates a vector of points represented as vectors in a vector of points represented ad fixed length arrays.
 /// Panics if the points do not all have the same length.
-pub fn vector_input_to_array_input<const D: usize>(v_in: Vec<VectorPoint>) -> Vec<Point<D>> {
+pub fn vector_input_to_array_input<const D: usize>(v_in: &Vec<VectorPoint>) -> Vec<Point<D>> {
     if v_in.len() == 0 {
         panic!("Received an unexpected 0 length vector. This should not have happened");
     }
@@ -203,7 +205,7 @@ pub fn vector_input_to_array_input<const D: usize>(v_in: Vec<VectorPoint>) -> Ve
 
 /// Transforms a vector of clusters containing points represented as arrays into a vector of clusters
 /// where each point is represented as a vector.
-pub fn array_res_to_vector_res<const D: usize>(a_res: DBSCANResult<D>) -> VectorDBSCANResult {
+/*pub fn array_res_to_vector_res<const D: usize>(a_res: DBSCANResult<D>) -> VectorDBSCANResult {
     let mut v_res : VectorDBSCANResult = Vec::with_capacity(a_res.len());
     for i in 0..a_res.len() {
         let mut v_cluster = Vec::with_capacity(a_res[i].len());
@@ -213,7 +215,7 @@ pub fn array_res_to_vector_res<const D: usize>(a_res: DBSCANResult<D>) -> Vector
         v_res.push(v_cluster);
     }
     v_res
-}
+}*/
 
 #[cfg(test)]
 mod tests;

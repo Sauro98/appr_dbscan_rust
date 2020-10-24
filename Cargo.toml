@@ -31,3 +31,4 @@ incremental = true
 [dependencies]
 partitions = "0.2.4"
 rstar = "0.8.2"
+ndarray = "0.13.1"

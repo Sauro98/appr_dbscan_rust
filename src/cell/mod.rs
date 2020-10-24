@@ -17,14 +17,15 @@ impl <const D:usize> RTreeParams for LargeNodeParameters<D> {
 /// A point in a D dimensional euclidean space that memorizes its
 /// status: 'core' or 'non core'
 pub struct StatusPoint<const D: usize> {
-    pub point: Point<D>,
+    /// memorizes the point index in the input data vector
+    pub point_index: usize,
     pub is_core: bool
 }
 
 impl <const D: usize> StatusPoint<D> {
-    fn new(point: Point<D>) -> StatusPoint<D> {
+    fn new(point_index: usize) -> StatusPoint<D> {
         StatusPoint {
-            point: point,
+            point_index: point_index,
             is_core: false
         }
     }
@@ -87,14 +88,14 @@ pub type CellTable <const D: usize> = HashMap<CellIndex<D>, Cell<D>>;
 
 /// Divides the D dimensional euclidean space in a grid of cells with side length `epsilon\sqrt(D)` and memorizes 
 /// the non empty ones in a `CellTable`
-pub fn find_cells<const D: usize>(points: Vec<Point<D>>, params: &DBSCANParams) -> CellTable<D> {
+pub fn find_cells<const D: usize>(points: &Vec<Point<D>>, params: &DBSCANParams) -> CellTable<D> {
     let mut table : CellTable<D> = CellTable::with_capacity(params.cardinality);
     for p_i in 0..params.cardinality {
         let curr_point = points[p_i];
         let index_arr = get_base_cell_index(&curr_point, params);
         let cell = table.entry(index_arr.clone())
                     .or_insert(Cell::new(&index_arr));
-        cell.points.push(StatusPoint::new(curr_point));
+        cell.points.push(StatusPoint::new(p_i));
     }
     table
 }

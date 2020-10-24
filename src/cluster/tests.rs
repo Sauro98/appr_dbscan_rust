@@ -21,12 +21,12 @@ fn clustering_test() {
     points.push(p2);
     points.push(p3);
     points.push(p4);
-    let mut base_table = find_cells(points, &params);
-    let mut p_v = label_points(&mut base_table, &params);
-    compute_adjacency_lists(&mut base_table, &params, &mut p_v);
-    let mut result = find_connected_components(&mut base_table, p_v);
-    assign_border_noise_points(&base_table, &mut result, &params);
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[NOISE_CLUSTER_INDEX].len(), 1);
-    assert_eq!(result[1].len(), 3);
+    let mut base_table = find_cells(&points, &params);
+    let mut p_v = label_points(&mut base_table,&points, &params);
+    compute_adjacency_lists(&mut base_table, &points,&params, &mut p_v);
+    let mut result = find_connected_components(&mut base_table, &points,p_v);
+    assign_border_noise_points(&base_table, &points, &mut result, &params);
+    assert_eq!(result.iter().filter(|x| x.is_some()).map(|x| x.unwrap()).max().unwrap().to_owned(), 1);
+    assert_eq!(result.iter().filter(|x| x.is_none()).count(), 1);
+    assert_eq!(result.iter().filter(|x| x.is_some() && x.unwrap() == 1).count(), 3);
 }

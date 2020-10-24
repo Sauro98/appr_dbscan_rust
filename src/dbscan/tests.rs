@@ -12,11 +12,11 @@ fn dbscan_test_1() {
     params.epsilon = 0.3;
     params.min_pts = 10;
     params.rho = 0.1;
-    let res = approximate_dbscan(points, &params);
+    let res = approximate_dbscan(&points, &params);
     let exp_noise = 0;
-    assert_eq!(res[0].len(), exp_noise);
+    assert_eq!(res.iter().filter(|x| x.is_none()).count(), exp_noise);
     let exp_clusters = 5;
-    assert_eq!(res.len(), exp_clusters + 1);
+    assert_eq!(res.iter().filter(|x| x.is_some()).map(|x| x.unwrap()).max().unwrap().to_owned(), exp_clusters);
 }
 
 #[test]
@@ -28,9 +28,9 @@ fn dbscan_test_2() {
     params.epsilon = 0.3;
     params.min_pts = 10;
     params.rho = 0.1;
-    let res = approximate_dbscan(points, &params);
+    let res = approximate_dbscan(&points, &params);
     let exp_noise = 0;
-    assert_eq!(res[0].len(), exp_noise);
+    assert_eq!(res.iter().filter(|x| x.is_none()).count(), exp_noise);
     let exp_clusters = 8;
-    assert_eq!(res.len(), exp_clusters + 1);
+    assert_eq!(res.iter().filter(|x| x.is_some()).map(|x| x.unwrap()).max().unwrap().to_owned(), exp_clusters);
 }

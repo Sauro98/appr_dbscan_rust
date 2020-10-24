@@ -4,6 +4,7 @@ use appr_dbscan::do_appr_dbscan_auto_dimensionality_file;
 use appr_dbscan::data_io::{params_from_file, write_to_bmp_vec};
 use std::env;
 use std::process;
+use std::time::Instant;
 
 
 
@@ -30,12 +31,15 @@ fn main() {
     println!("Epsilon: {}, Rho: {}, MinPts: {}",epsilon, rho, min_pts);
     println!("Dim: {}, n: {}, Apprx_rdx: {}",params.dimensionality, params.cardinality, params.epsilon*(1_f64 +params.rho));
 
-
-    let (res, dimensionality) = do_appr_dbscan_auto_dimensionality_file(file_name, epsilon, rho, min_pts);
+    let tot = Instant::now();
+    let (res, _dimensionality) = do_appr_dbscan_auto_dimensionality_file(file_name, epsilon, rho, min_pts);
+    println!("Completed external DBSCAN in {} milliseconds", tot.elapsed().as_millis());
     if print_bitmap {
-        write_to_bmp_vec(&"./gp_srcs/out.bmp",&res, dimensionality);
+        //write_to_bmp_vec(&"./out.bmp",&res, dimensionality);
     }
-    println!("Found {} clusters and {} noise points", res.len() -1 ,res[0].len());
+    println!("Found {} clusters and {} noise points",
+          res.iter().filter(|x| x.is_some()).map(|x| x.unwrap()).max().unwrap_or(0)
+         ,res.iter().filter(|x| x.is_none()).count());
 }
 
 fn print_help(){

@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Write};
 use std::io::{self, BufRead};
 use std::path::{Path};
-use crate::utils::{DBSCANParams, Point, DBSCANResult, VectorDBSCANResult, array_res_to_vector_res};
+use crate::utils::{DBSCANParams, Point, DBSCANResult, VectorDBSCANResult, /*array_res_to_vector_res*/};
 
 const PALETTE_ARR : [[u8; 3];64] = [
     [0, 0, 0],
@@ -175,10 +175,11 @@ where P: AsRef<Path>, {
 }
 
 /// Same as `write_to_bmp_vec` but takes in input a DBSCANResult where each point is a fixed length array.
-pub fn write_to_bmp<P, const D: usize>(file_name: &P,res: &DBSCANResult<D>)
+//TODO: decide what to do
+/*pub fn write_to_bmp<P, const D: usize>(file_name: &P,res: &DBSCANResult<D>)
 where P: AsRef<Path>, {
     write_to_bmp_vec(file_name, &array_res_to_vector_res(res.clone()), D);
-}
+}*/
 
 
 /// Writes the clusterized result to a bmp image using high contrast colors for the different clusters. 
