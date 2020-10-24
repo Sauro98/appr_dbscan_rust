@@ -4,17 +4,13 @@ use crate::utils::*;
 use partitions::PartitionVec;
 use ndarray::{Array1};
 
-/// The result of the approximated DBSCAN algorithm always has an element at this index
-/// that corresponds to the set of noise points found
-pub const NOISE_CLUSTER_INDEX:usize = 0;
-
 /// Explores the union-find structure `part_vec` and puts all core points in the same set in the same clusters and core points from 
 /// different sets in different clusters. This function supposes that all possible union operations on `part_vec` were already done.
 /// The result of this function is a collection of cluster constructed as described above, and its first element is the (now still empty)
 /// set of noise points
 pub fn find_connected_components<const D: usize>(cells: &mut CellTable<D>, points: &Vec<Point<D>>, part_vec: PartitionVec<CellIndex<D>>) -> DBSCANResult{
     let mut res = Array1::from_elem(points.len(),None);
-    let noise_cluster : Cluster<D> = Vec::new();
+    //let noise_cluster : Cluster<D> = Vec::new();
     //the noise cluster will be at index 0
     //res.push(noise_cluster);
     let mut current_cluster_i: usize = 1;

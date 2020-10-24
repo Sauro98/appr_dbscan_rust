@@ -1,7 +1,7 @@
 #![feature(min_const_generics)]
 extern crate appr_dbscan;
 use appr_dbscan::do_appr_dbscan_auto_dimensionality_file;
-use appr_dbscan::data_io::{params_from_file, write_to_bmp_vec};
+use appr_dbscan::data_io::{params_from_file/*, write_to_bmp_vec*/};
 use std::env;
 use std::process;
 use std::time::Instant;
