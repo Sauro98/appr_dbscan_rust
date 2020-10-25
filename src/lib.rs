@@ -44,9 +44,7 @@ use std::path::{Path};
 /// use appr_dbscan::do_appr_dbscan_file;
 /// use appr_dbscan::utils::DBSCANResult;
 /// 
-/// let res : DBSCANResult<2> = do_appr_dbscan_file("./datasets/out_test_1.txt", 0.3, 0.1, 10);
-/// let clusters_count = res.len() - 1;
-/// let noise_points_count = res[0].len();
+/// let res : DBSCANResult = do_appr_dbscan_file::<&str,2>("./datasets/out_test_1.txt", 0.3, 0.1, 10);
 /// ```
 /// 
 pub fn do_appr_dbscan_file<P, const D: usize>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult 
@@ -90,9 +88,7 @@ where P: AsRef<Path>{
 /// use appr_dbscan::utils::DBSCANResult;
 /// 
 /// let points = vec![[0.0,0.0],[1.0,1.0],[0.0,1.0],[1.0,0.0],[2.0,1.0],[0.0,2.0],[2.0,1.0],[1.0,1.0]];
-/// let res : DBSCANResult<2> = do_appr_dbscan_points(&points, 0.3, 0.1, 10);
-/// let clusters_count = res.len() - 1;
-/// let noise_points_count = res[0].len();
+/// let res : DBSCANResult = do_appr_dbscan_points::<2>(&points, 0.3, 0.1, 10);
 /// ```
 /// 
 pub fn do_appr_dbscan_points<const D: usize>(points: &Vec<Point<D>>, epsilon: f64, rho: f64, min_pts: usize) -> DBSCANResult {
@@ -130,8 +126,6 @@ pub fn do_appr_dbscan_points<const D: usize>(points: &Vec<Point<D>>, epsilon: f6
 /// use appr_dbscan::do_appr_dbscan_auto_dimensionality_file;
 /// 
 /// let (res,dimensionality) = do_appr_dbscan_auto_dimensionality_file("./datasets/out_test_1.txt", 0.3, 0.1, 10);
-/// let clusters_count = res.len() - 1;
-/// let noise_points_count = res[0].len();
 /// ```
 /// 
 pub fn do_appr_dbscan_auto_dimensionality_file<P>(filename: P, epsilon: f64, rho: f64, min_pts: usize) -> (DBSCANResult, usize)
@@ -173,8 +167,6 @@ where P: AsRef<Path>{
 /// 
 /// let points = vec![vec![0.0,0.0],vec![1.0,1.0],vec![0.0,1.0],vec![1.0,0.0],vec![2.0,1.0],vec![0.0,2.0],vec![2.0,1.0],vec![1.0,1.0]];
 /// let (res, dimensionality) = do_appr_dbscan_auto_dimensionality_points(&points, 0.3, 0.1, 10);
-/// let clusters_count = res.len() - 1;
-/// let noise_points_count = res[0].len();
 /// ```
 /// 
 pub fn do_appr_dbscan_auto_dimensionality_points(points: &Vec<VectorPoint>, epsilon: f64, rho: f64, min_pts: usize) -> (DBSCANResult, usize) {

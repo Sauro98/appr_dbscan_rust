@@ -1,5 +1,5 @@
 use rstar::{Point as RPoint};
-use ndarray::{Array1};
+use ndarray::{Array1,ArrayD};
 
 #[derive(Clone,Copy,PartialEq,Debug)]
 /// Mock struct to use RTrees with const generics

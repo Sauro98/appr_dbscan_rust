@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{Write};
 use std::io::{self, BufRead};
 use std::path::{Path};
-use crate::utils::{DBSCANParams, Point, DBSCANResult, VectorDBSCANResult, /*array_res_to_vector_res*/};
+use crate::utils::{DBSCANParams, Point, VectorDBSCANResult /*array_res_to_vector_res*/};
 
 const PALETTE_ARR : [[u8; 3];64] = [
     [0, 0, 0],
