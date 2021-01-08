@@ -1,6 +1,10 @@
 # appr_dbscan_rust
 Rust implementation of the approximate version of DBSCAN introduced by Gan and Tao in this [paper](https://www.cse.cuhk.edu.hk/~taoyf/paper/tods17-dbscan.pdf)
 
+# Notice
+
+An upated version of this library is available in the [linfa ecosistem](https://github.com/rust-ml/linfa)
+
 # Recognized data files
 
 Accepted data files should contain one data point per line and nothing else. Each line should contain the components of the point separated by whitespace. 
