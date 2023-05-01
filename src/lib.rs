@@ -1,4 +1,3 @@
-#![feature(min_const_generics)]
 pub mod utils;
 mod tree_structure;
 mod cell;
